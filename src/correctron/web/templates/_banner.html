@@ -1,0 +1,4 @@
+<div{% if id %} id="{{ id }}"{% endif %} class="banner banner-{{ nivel }}" role="{{ 'alert' if nivel == 'error' else 'status' }}">
+  <span>{{ mensaje }}</span>
+  {% if recargar %}<button type="button" class="outline" onclick="location.reload()">Recargar</button>{% endif %}
+</div>

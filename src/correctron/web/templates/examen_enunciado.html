@@ -1,0 +1,13 @@
+{% set ver_base = '/a/' ~ s ~ '/e/' ~ e ~ '?tab=enunciado' %}
+<div class="visor-layout">
+  <aside>
+    <h3>Enunciado y material</h3>
+    <p class="ayuda">Enunciado, rúbrica, soluciones… cualquier archivo.</p>
+    {% include "_lista_archivos.html" %}
+  </aside>
+  <section>
+    {% with ruta = seleccionado.rel_path if seleccionado else '', nombre = seleccionado.name if seleccionado else '', vacio = 'Sube el enunciado (PDF) para verlo aquí.' %}
+    {% include "_visor.html" %}
+    {% endwith %}
+  </section>
+</div>

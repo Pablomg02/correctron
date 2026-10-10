@@ -1,0 +1,54 @@
+{% from "_macros.html" import chip_presentado, lista_problemas %}
+<div class="cuentas">
+  <div class="cuenta-tarjeta"><span id="cuenta-roster">{{ cuentas.roster }}</span><small>en la lista</small></div>
+  <div class="cuenta-tarjeta"><span id="cuenta-si">{{ cuentas.si }}</span><small>{{ 'presentado' if cuentas.si == 1 else 'presentados' }}</small></div>
+  <div class="cuenta-tarjeta"><span id="cuenta-np">{{ cuentas.no }}</span><small>{{ 'no presentado' if cuentas.no == 1 else 'no presentados' }}</small></div>
+  <div class="cuenta-tarjeta{% if cuentas.sin %} cuenta-pendiente{% endif %}"><span id="cuenta-sin">{{ cuentas.sin }}</span><small>sin marcar</small></div>
+  {% for g, n in hojas %}
+  <a class="cuenta-tarjeta" href="/a/{{ s }}/e/{{ e }}?tab=notas&corrector={{ g }}"><span>{{ n }}</span><small>{{ 'fila' if n == 1 else 'filas' }} de {{ g }}</small></a>
+  {% endfor %}
+  <a class="cuenta-tarjeta cuenta-final" href="/a/{{ s }}/e/{{ e }}?tab=notas&corrector=final"><span>{{ filas_final }}</span><small>{{ 'fila' if filas_final == 1 else 'filas' }} en final</small></a>
+  <a class="cuenta-tarjeta" href="/a/{{ s }}/e/{{ e }}?tab=revisiones"><span>{{ revisiones|length }}</span><small>{{ 'revisión' if revisiones|length == 1 else 'revisiones' }}</small></a>
+</div>
+{% if cuentas.mal %}
+<div class="banner banner-error">{% if cuentas.mal == 1 %}1 alumno tiene{% else %}{{ cuentas.mal }} alumnos tienen{% endif %} un valor de «presentado» no válido en alumnos.csv.</div>
+{% endif %}
+
+<div class="dos-columnas ancha-izquierda">
+  <section>
+    <h3>Notas vigentes</h3>
+    <p class="ayuda">final.csv más las revisiones, en orden. NP = no presentado.</p>
+    {% if not cfg %}
+    <div class="vacio">No se pueden calcular las notas hasta que config.json sea válido. <a href="/a/{{ s }}/e/{{ e }}?tab=config">Ir a Configuración</a></div>
+    {% elif not vigentes %}
+    <div class="vacio">La lista del examen está vacía. Añade alumnos en <a href="/a/{{ s }}/e/{{ e }}?tab=alumnos">Alumnos</a>.</div>
+    {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla-lista tabla-vigentes">
+        <thead><tr><th>Alumno</th><th>Presentado</th><th class="num">Nota vigente</th><th></th></tr></thead>
+        <tbody>
+          {% for g in vigentes %}
+          <tr id="fila-{{ g.id }}" class="estado-{{ g.status }}">
+            <td>{{ g.alumno }}</td>
+            <td>{{ chip_presentado(g.presentado) }}</td>
+            <td class="num">
+              {% if g.status == 'np' %}<span class="chip chip-no">NP</span>
+              {% elif g.status == 'sin_nota' %}<span class="tenue">Sin nota</span>
+              {% elif g.status == 'incompleta' %}<span class="parcial">Incompleta{% if g.result.partial is not none %} (parcial {{ g.result.partial|nota(decimales) }}){% endif %}</span>
+              {% else %}<strong class="nota">{{ g.result.total|nota(decimales) }}</strong>{% endif %}
+            </td>
+            <td>
+              {% if g.revised_in %}<a class="chip chip-revisada" href="/a/{{ s }}/e/{{ e }}?tab=revisiones&rev={{ g.revised_in[-1]|urlencode }}" title="Revisada en {{ g.revised_in|join(', ') }}">revisada</a>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </section>
+  <section>
+    <h3>Problemas en los archivos</h3>
+    {{ lista_problemas(problemas, 'Todos los archivos del examen son coherentes.') }}
+  </section>
+</div>

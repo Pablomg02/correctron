@@ -1,0 +1,60 @@
+{% macro campo_alumno(s, st, campo, oob=False) -%}
+<input id="c-{{ st.id }}-{{ campo }}" name="{{ campo }}" value="{{ st[campo] }}"
+  {%- if campo == 'email' %} type="email"{% else %} type="text"{% endif %}
+  {%- if campo in ['apellidos', 'nombre'] %} required{% endif %}
+  aria-label="{{ campo|capitalize }} de {{ st.id }}"
+  hx-post="/a/{{ s }}/alumnos/{{ st.id }}" hx-trigger="change"
+  hx-include="closest tr, #version-lista" hx-swap="none"
+  {%- if oob %} hx-swap-oob="true"{% endif %}>
+{%- endmacro %}
+
+{% macro chip_presentado(valor, raw='') -%}
+{% if valor == 'si' %}<span class="chip chip-si">Presentado</span>
+{%- elif valor == 'no' %}<span class="chip chip-no">NP</span>
+{%- elif valor is none %}<span class="chip chip-mal" title="Valor no válido en alumnos.csv">¿{{ raw }}?</span>
+{%- else %}<span class="chip chip-sin">Sin marcar</span>{% endif %}
+{%- endmacro %}
+
+{% macro lista_problemas(issues, vacio='No se ha encontrado ningún problema.') -%}
+{% set errores = issues|selectattr('level', 'equalto', 'error')|list %}
+{% set avisos = issues|selectattr('level', 'equalto', 'aviso')|list %}
+{% if not issues %}
+<p class="ok-linea">✓ {{ vacio }}</p>
+{% else %}
+<ul class="problemas">
+  {% for i in errores %}<li class="problema-error"><span class="etiqueta">Error</span> <code>{{ i.file }}</code> {{ i.message }}</li>{% endfor %}
+  {% for i in avisos %}<li class="problema-aviso"><span class="etiqueta">Aviso</span> <code>{{ i.file }}</code> {{ i.message }}</li>{% endfor %}
+</ul>
+{% endif %}
+{%- endmacro %}
+
+{# Computed cells of the grades grid. With oob=True they are out-of-band swaps (D26). #}
+{% macro subtotal(id, grupo, value, decimales, oob=False) -%}
+<span id="sub-{{ id }}-{{ grupo }}" class="calculado"{% if oob %} hx-swap-oob="true"{% endif %}>{{ value|nota(decimales) if value is not none else '' }}</span>
+{%- endmacro %}
+
+{% macro total_calculado(id, result, decimales, oob=False) -%}
+<span id="total-{{ id }}" class="calculado total"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {%- if result.total is not none %}{{ result.total|nota(decimales) }}
+  {%- elif result.partial is not none %}<span class="parcial" title="Faltan apartados por corregir">{{ result.partial|nota(decimales) }} parcial</span>
+  {%- endif -%}
+</span>
+{%- endmacro %}
+
+{% macro origen(id, value, oob=False) -%}
+<span id="origen-{{ id }}" class="origen{% if value == 'manual' %} origen-manual{% endif %}"{% if oob %} hx-swap-oob="true"{% endif %}>{{ value }}</span>
+{%- endmacro %}
+
+{% macro error_fila(id, invalid, oob=False) -%}
+<span id="err-{{ id }}" class="error-fila" role="alert"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {%- for col, msg in invalid.items() %}<span>{{ col }}: {{ msg }}</span>{% endfor -%}
+</span>
+{%- endmacro %}
+
+{# Total of one grade sheet row in the comparison (blank when missing). #}
+{% macro total_hoja(result, decimales) -%}
+{% if result is none %}
+{%- elif result.total is not none %}<span class="nota">{{ result.total|nota(decimales) }}</span>
+{%- elif result.partial is not none %}<span class="parcial" title="Incompleta">{{ result.partial|nota(decimales) }} parcial</span>
+{%- else %}<span class="parcial">incompleta</span>{% endif %}
+{%- endmacro %}

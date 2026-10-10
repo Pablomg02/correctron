@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% from "_macros.html" import lista_problemas %}
+{% block content %}
+{% include "_sondeo.html" %}
+<hgroup class="cabecera">
+  <h1>{{ meta.nombre }}</h1>
+  <p>{% if meta.curso %}{{ meta.curso }} · {% endif %}{% if meta.codigo %}{{ meta.codigo }} · {% endif %}<code>{{ s }}/</code></p>
+</hgroup>
+<nav class="pestanas" aria-label="Secciones de la asignatura">
+  <a href="/a/{{ s }}?tab=alumnos"{% if tab == 'alumnos' %} aria-current="page"{% endif %}>Alumnos <span id="cuenta-alumnos" class="cuenta">{{ sl.students|length }}</span></a>
+  <a href="/a/{{ s }}?tab=examenes"{% if tab == 'examenes' %} aria-current="page"{% endif %}>Exámenes y trabajos <span class="cuenta">{{ examenes|length }}</span></a>
+  <a href="/a/{{ s }}?tab=datos"{% if tab == 'datos' %} aria-current="page"{% endif %}>Datos</a>
+  <a href="/a/{{ s }}?tab=problemas"{% if tab == 'problemas' %} aria-current="page"{% endif %}>Problemas{% if n_problemas %} <span class="cuenta cuenta-aviso">{{ n_problemas }}</span>{% endif %}</a>
+</nav>
+
+{% if tab == 'alumnos' %}
+{% include "_panel_alumnos.html" %}
+
+{% elif tab == 'examenes' %}
+<div class="dos-columnas ancha-izquierda">
+  <section>
+    {% if examenes %}
+    <div class="tabla-scroll">
+      <table class="tabla-lista">
+        <thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha</th><th class="num">Alumnos</th><th class="num">Presentados</th></tr></thead>
+        <tbody>
+          {% for ex in examenes %}
+          <tr>
+            <td>
+              <a href="/a/{{ s }}/e/{{ ex.slug }}"><strong>{{ ex.nombre }}</strong></a>
+              {% if not ex.config_ok %}<span class="chip chip-mal" title="config.json tiene errores">⚠ config.json</span>{% endif %}
+              <br><small class="tenue"><code>{{ ex.slug }}/</code></small>
+            </td>
+            <td>{{ ex.tipo|capitalize or '—' }}</td>
+            <td>{{ ex.fecha or '—' }}</td>
+            <td class="num">{{ ex.n_roster }}</td>
+            <td class="num">{{ ex.n_presentados }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="vacio"><strong>Todavía no hay exámenes ni trabajos.</strong> Crea uno con el formulario; después podrás definir sus criterios.</div>
+    {% endif %}
+  </section>
+  <article class="tarjeta">
+    <h3>Nuevo examen o trabajo</h3>
+    <form method="post" action="/a/{{ s }}/examenes">
+      <label>Nombre <input name="nombre" required placeholder="p. ej. Segundo parcial"></label>
+      <div class="grid">
+        <label>Tipo
+          <select name="tipo"><option value="examen">Examen</option><option value="trabajo">Trabajo</option></select>
+        </label>
+        <label>Fecha <input name="fecha" type="date"></label>
+      </div>
+      <label><input type="checkbox" name="copiar_alumnos" value="1" checked> Copiar los alumnos de la asignatura</label>
+      <button type="submit">Crear</button>
+    </form>
+  </article>
+</div>
+
+{% elif tab == 'datos' %}
+<article class="tarjeta estrecha">
+  <h3>Datos de la asignatura</h3>
+  <form method="post" action="/a/{{ s }}/datos">
+    <input type="hidden" id="version-datos" name="version" value="{{ meta_version }}">
+    <label>Nombre <input name="nombre" value="{{ meta.nombre }}" required></label>
+    <div class="grid">
+      <label>Curso <input name="curso" value="{{ meta.curso }}" placeholder="2026-2027"></label>
+      <label>Código <input name="codigo" value="{{ meta.codigo }}"></label>
+    </div>
+    <p class="ayuda">Se guardan en <code>{{ s }}/asignatura.json</code>. El nombre de la carpeta no cambia.</p>
+    <button type="submit">Guardar</button>
+  </form>
+</article>
+
+{% elif tab == 'problemas' %}
+<section>
+  <h3>Archivos de la asignatura</h3>
+  {{ lista_problemas(problemas_asignatura, 'asignatura.json y alumnos.csv están bien.') }}
+  <h3>Exámenes y trabajos</h3>
+  {% if problemas_examenes %}
+  <table class="tabla-lista">
+    <thead><tr><th>Examen o trabajo</th><th class="num">Errores</th><th class="num">Avisos</th></tr></thead>
+    <tbody>
+      {% for p in problemas_examenes %}
+      <tr>
+        <td><a href="/a/{{ s }}/e/{{ p.exam.slug }}?tab=resumen">{{ p.exam.nombre }}</a> <small class="tenue"><code>{{ p.exam.slug }}</code></small></td>
+        <td class="num">{% if p.errores %}<span class="chip chip-error">{{ p.errores }}</span>{% else %}0{% endif %}</td>
+        <td class="num">{% if p.avisos %}<span class="chip chip-aviso">{{ p.avisos }}</span>{% else %}0{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="tenue">No hay exámenes.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

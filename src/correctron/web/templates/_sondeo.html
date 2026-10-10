@@ -1,0 +1,3 @@
+{# Page state (D14): current fingerprint of the watched folder and the 3 s poll. #}
+<input type="hidden" id="huella-actual" name="huella" value="{{ huella }}">
+<div id="sondeo" hx-get="/api/huella?ruta={{ ruta_vigilada|urlencode }}" hx-include="#huella-actual" hx-trigger="every 3s" hx-swap="outerHTML"></div>

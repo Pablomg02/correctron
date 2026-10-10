@@ -1,0 +1,6 @@
+{% from "_macros.html" import subtotal, total_calculado, origen, error_fila %}
+{% set id = entry.id %}
+{% for c in cfg.criterios if c.is_group %}{{ subtotal(id, c.id, result.groups.get(c.id), decimales, oob=True) }}{% endfor %}
+{% if cfg.effective_mode() != 'manual' %}{{ total_calculado(id, result, decimales, oob=True) }}{% endif %}
+{% if corrector == 'final' %}{{ origen(id, cells.get('origen', ''), oob=True) }}{% endif %}
+{{ error_fila(id, invalid, oob=True) }}

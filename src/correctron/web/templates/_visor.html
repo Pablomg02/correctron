@@ -1,0 +1,22 @@
+{# The viewer for one file: `ruta` is relative to the data root, `nombre` its file name. #}
+{% if ruta %}
+{% set ext = ruta.rsplit('.', 1)[-1]|lower if '.' in ruta else '' %}
+<div class="visor-cabecera">
+  <strong>{{ nombre or ruta.rsplit('/', 1)[-1] }}</strong>
+  <span>
+    <a href="/archivo/{{ ruta }}" target="_blank" rel="noopener">Abrir en otra pestaña</a> ·
+    <a href="/archivo/{{ ruta }}" download>Descargar</a>
+  </span>
+</div>
+{% if ext == 'pdf' %}
+<iframe src="/archivo/{{ ruta }}" class="visor" title="{{ nombre or ruta }}"></iframe>
+{% elif ext in ['txt', 'md', 'csv'] %}
+<iframe src="/archivo/{{ ruta }}" class="visor visor-texto" title="{{ nombre or ruta }}"></iframe>
+{% elif ext in ['png', 'jpg', 'jpeg', 'gif', 'webp'] %}
+<div class="visor visor-imagen"><img src="/archivo/{{ ruta }}" alt="{{ nombre or ruta }}"></div>
+{% else %}
+<div class="vacio">Este tipo de archivo no se puede ver aquí. <a href="/archivo/{{ ruta }}" download>Descargar</a></div>
+{% endif %}
+{% else %}
+<div class="vacio">{{ vacio|default('No hay ningún archivo seleccionado.') }}</div>
+{% endif %}

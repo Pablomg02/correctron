@@ -1,0 +1,25 @@
+{% set p = parse_presentado(en.presentado) %}
+<tr id="fila-{{ en.id }}"{% if en.id in resaltar|default([]) %} class="resaltada"{% endif %}>
+  <td><strong>{{ en.apellidos }}, {{ en.nombre }}</strong><br><small class="tenue"><code>{{ en.id }}</code></small></td>
+  <td>
+    <select id="c-{{ en.id }}-presentado" name="presentado" class="presentado" aria-label="Presentado"
+      hx-post="/a/{{ s }}/e/{{ e }}/alumnos/{{ en.id }}" hx-trigger="change"
+      hx-include="closest tr, #version-lista" hx-swap="none">
+      {% if p is none %}<option value="{{ en.presentado }}" selected>(no válido: {{ en.presentado }})</option>{% endif %}
+      <option value=""{% if p == '' %} selected{% endif %}>Sin marcar</option>
+      <option value="si"{% if p == 'si' %} selected{% endif %}>Presentado</option>
+      <option value="no"{% if p == 'no' %} selected{% endif %}>No presentado</option>
+    </select>
+  </td>
+  <td>
+    <input id="c-{{ en.id }}-observaciones" name="observaciones" value="{{ en.observaciones }}" aria-label="Observaciones"
+      hx-post="/a/{{ s }}/e/{{ e }}/alumnos/{{ en.id }}" hx-trigger="change"
+      hx-include="closest tr, #version-lista" hx-swap="none">
+  </td>
+  <td class="col-accion">
+    <button type="button" class="boton-quitar" title="Quitar de este examen"
+      hx-post="/a/{{ s }}/e/{{ e }}/alumnos/{{ en.id }}/borrar" hx-include="#version-lista"
+      hx-target="#panel-roster" hx-swap="outerHTML"
+      hx-confirm="¿Quitar a {{ en.nombre }} {{ en.apellidos }} de este examen? Sus notas y entregas no se borran.">Quitar</button>
+  </td>
+</tr>

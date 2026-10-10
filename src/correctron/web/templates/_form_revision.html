@@ -1,0 +1,44 @@
+{# Revision form for one student. Needs: s, e, cfg, rev, candidatos, alumno, valores, errores, antes, rev_version. #}
+<article class="tarjeta" id="form-revision">
+  <h3>{% if alumno %}{{ 'Editar la revisión de' if editando else 'Revisar a' }} {{ alumno_nombre }}{% else %}Revisar una nota{% endif %}</h3>
+  <form method="get" action="/a/{{ s }}/e/{{ e }}" class="elegir-alumno">
+    <input type="hidden" name="tab" value="revisiones">
+    <input type="hidden" name="rev" value="{{ rev }}">
+    <label>Alumno
+      <select name="alumno" onchange="this.form.submit()">
+        <option value=""{% if not alumno %} selected{% endif %}>— elige un alumno —</option>
+        {% for en in candidatos %}<option value="{{ en.id }}"{% if en.id == alumno %} selected{% endif %}>{{ en.apellidos }}, {{ en.nombre }}</option>{% endfor %}
+      </select>
+    </label>
+    <noscript><button type="submit">Elegir</button></noscript>
+  </form>
+  {% if alumno %}
+  {% if errores %}
+  <div class="banner banner-error" role="alert"><div><strong>No se ha guardado nada.</strong><ul>{% for col, msg in errores.items() %}<li>{{ col }}: {{ msg }}</li>{% endfor %}</ul></div></div>
+  {% endif %}
+  <form method="post" action="/a/{{ s }}/e/{{ e }}/revisiones/{{ rev }}/{{ alumno }}">
+    <input type="hidden" id="version-revision" name="version" value="{{ rev_version }}">
+    <p class="ayuda">Valores tras esta revisión. Cambia solo lo revisado: en el archivo se guardan únicamente los apartados que cambian respecto a la nota anterior.</p>
+    <div class="campos-revision">
+      {% for leaf in cfg.leaves() %}
+      <label>
+        <span>{{ leaf.id }} <small class="tenue">/{{ leaf.maximo|nota(decimales) }}</small></span>
+        <input name="{{ leaf.id }}" value="{{ valores.get(leaf.id, '')|celda }}" inputmode="decimal" autocomplete="off"{% if leaf.id in errores %} aria-invalid="true"{% endif %}>
+        <small class="tenue">antes: {{ antes.get(leaf.id, '')|celda or '—' }}</small>
+      </label>
+      {% endfor %}
+      {% if cfg.effective_mode() == 'manual' %}
+      <label>
+        <span>Total <small class="tenue">/{{ cfg.nota_maxima|nota(decimales) }}</small></span>
+        <input name="total" value="{{ valores.get('total', '')|celda }}" inputmode="decimal" autocomplete="off"{% if 'total' in errores %} aria-invalid="true"{% endif %}>
+        <small class="tenue">antes: {{ antes.get('total', '')|celda or '—' }}</small>
+      </label>
+      {% else %}
+      <p class="total-antes">Total antes: <strong>{{ antes.get('total', '')|celda or '—' }}</strong> (se recalcula al guardar)</p>
+      {% endif %}
+    </div>
+    <label>Motivo <input name="motivo" value="{{ valores.get('motivo', '') }}" required placeholder="Por ejemplo: apartado 2 mal sumado"{% if 'motivo' in errores %} aria-invalid="true"{% endif %}></label>
+    <button type="submit">Guardar revisión</button>
+  </form>
+  {% endif %}
+</article>

@@ -1,0 +1,59 @@
+{% from "_macros.html" import chip_presentado %}
+{% if not alumno %}
+{% if huerfanas %}
+<div class="banner banner-aviso">
+  <span>Carpetas de entregas que no están en la lista del examen:
+  {% for h in huerfanas %}<a href="/a/{{ s }}/e/{{ e }}?tab=entregas&alumno={{ h|urlencode }}"><code>{{ h }}</code></a>{% if not loop.last %}, {% endif %}{% endfor %}</span>
+</div>
+{% endif %}
+{% if roster.entries %}
+<p class="ayuda">Cada alumno tiene una carpeta <code>entregas/&lt;id&gt;/</code> con la entrega <em>original</em> y la <em>corregida</em>.</p>
+<div class="tabla-scroll">
+  <table class="tabla-lista">
+    <thead><tr><th>Alumno</th><th>Presentado</th><th class="num">Original</th><th class="num">Corregido</th><th></th></tr></thead>
+    <tbody>
+      {% for en in roster.entries %}
+      {% set p = parse_presentado(en.presentado) %}
+      {% set n = conteos.get(en.id, (0, 0)) %}
+      <tr id="fila-{{ en.id }}"{% if p == 'no' %} class="np"{% endif %}>
+        <td>{{ en.apellidos }}, {{ en.nombre }}</td>
+        <td>{{ chip_presentado(p, en.presentado) }}</td>
+        <td class="num">{% if n[0] %}<span class="chip chip-si">{{ n[0] }}</span>{% else %}<span class="tenue">0</span>{% endif %}</td>
+        <td class="num">{% if n[1] %}<span class="chip chip-si">{{ n[1] }}</span>{% else %}<span class="tenue">0</span>{% endif %}</td>
+        <td><a href="/a/{{ s }}/e/{{ e }}?tab=entregas&alumno={{ en.id|urlencode }}">Abrir →</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="vacio">La lista del examen está vacía. Añade alumnos en <a href="/a/{{ s }}/e/{{ e }}?tab=alumnos">Alumnos</a>.</div>
+{% endif %}
+
+{% else %}
+{% set base = '/a/' ~ s ~ '/e/' ~ e ~ '?tab=entregas&alumno=' ~ (alumno|urlencode) %}
+<div class="barra-alumno">
+  <a href="/a/{{ s }}/e/{{ e }}?tab=entregas">← Todas las entregas</a>
+  <h3>{% if entrada %}{{ entrada.apellidos }}, {{ entrada.nombre }} {{ chip_presentado(parse_presentado(entrada.presentado), entrada.presentado) }}{% else %}<code>{{ alumno }}</code> <span class="chip chip-aviso">no está en la lista</span>{% endif %}</h3>
+  <span class="paso">
+    {% if anterior %}<a href="/a/{{ s }}/e/{{ e }}?tab=entregas&alumno={{ anterior|urlencode }}&parte={{ parte }}">← anterior</a>{% else %}<span class="tenue">← anterior</span>{% endif %}
+    ·
+    {% if siguiente %}<a href="/a/{{ s }}/e/{{ e }}?tab=entregas&alumno={{ siguiente|urlencode }}&parte={{ parte }}">siguiente →</a>{% else %}<span class="tenue">siguiente →</span>{% endif %}
+  </span>
+</div>
+<nav class="subpestanas">
+  <a href="{{ base }}&parte=original"{% if parte == 'original' %} aria-current="page"{% endif %}>Original <span class="cuenta">{{ partes.original }}</span></a>
+  <a href="{{ base }}&parte=corregido"{% if parte == 'corregido' %} aria-current="page"{% endif %}>Corregido <span class="cuenta">{{ partes.corregido }}</span></a>
+</nav>
+{% set ver_base = base ~ '&parte=' ~ parte %}
+<div class="visor-layout">
+  <aside>
+    {% include "_lista_archivos.html" %}
+  </aside>
+  <section>
+    {% with ruta = seleccionado.rel_path if seleccionado else '', nombre = seleccionado.name if seleccionado else '', vacio = ('No hay entrega original. Súbela con el formulario.' if parte == 'original' else 'Todavía no hay versión corregida. Súbela con el formulario.') %}
+    {% include "_visor.html" %}
+    {% endwith %}
+  </section>
+</div>
+{% endif %}

@@ -1,0 +1,105 @@
+{% set con_grupos = cfg.criterios|selectattr('is_group')|list|length > 0 %}
+{% set filas_cab = 2 if con_grupos else 1 %}
+<div class="barra-hojas">
+  <nav class="hojas" aria-label="Hojas de notas">
+    {% for g in correctores %}
+    <a href="/a/{{ s }}/e/{{ e }}?tab=notas&corrector={{ g }}" class="hoja{% if g == corrector %} actual{% endif %}"{% if g == corrector %} aria-current="page"{% endif %}>{{ g }}</a>
+    {% endfor %}
+    <a href="/a/{{ s }}/e/{{ e }}?tab=notas&corrector=final" class="hoja hoja-final{% if corrector == 'final' %} actual{% endif %}"{% if corrector == 'final' %} aria-current="page"{% endif %} title="Nota oficial (notas/final.csv)">final</a>
+  </nav>
+  <form method="post" action="/a/{{ s }}/e/{{ e }}/correctores" class="nuevo-corrector">
+    <input name="nombre" placeholder="Nuevo corrector" aria-label="Nombre del nuevo corrector" required>
+    <button type="submit" class="outline">Crear</button>
+  </form>
+</div>
+
+{% if not corrector %}
+<div class="vacio">
+  <strong>Todavía no hay hojas de notas.</strong>
+  Crea un corrector (por ejemplo, tu nombre) para empezar a poner notas, o abre la hoja <a href="/a/{{ s }}/e/{{ e }}?tab=notas&corrector=final">final</a> para escribir directamente la nota oficial.
+  Un LLM puede escribir su propia hoja <code>notas/&lt;nombre&gt;.csv</code> siguiendo <a href="/archivo/LEEME.md" target="_blank" rel="noopener">LEEME.md</a>.
+</div>
+{% else %}
+{% if corrector == 'final' and hay_revisiones %}
+<div class="banner banner-info"><span>Hay revisiones posteriores; la nota vigente puede diferir (ver <a href="/a/{{ s }}/e/{{ e }}?tab=revisiones">Revisiones</a>).</span></div>
+{% endif %}
+{% if hoja.table.malformed %}
+<div class="banner banner-error">«{{ hoja_rel }}» tiene filas con más celdas que la cabecera (líneas {{ hoja.table.malformed|join(', ') }}). Corrígelo a mano: mientras tanto no se puede modificar desde aquí.</div>
+{% endif %}
+{% if columnas_extra %}
+<div class="banner banner-info">Columnas que no son criterios (se conservan): {{ columnas_extra|join(', ') }}.</div>
+{% endif %}
+<p class="ayuda">
+  Hoja <strong>{{ corrector }}</strong> (<a href="/archivo/{{ hoja_rel }}" target="_blank" rel="noopener">ver CSV</a>).
+  Cada fila se guarda al salir de una casilla. Tab: casilla siguiente · Intro: misma casilla de la fila siguiente.
+  {% if corrector == 'final' %}Al editar aquí, el origen pasa a «manual».{% endif %}
+</p>
+<input type="hidden" id="version-hoja" name="version" value="{{ hoja.version }}">
+{% if not filas %}
+<div class="vacio">La lista del examen está vacía. Añade alumnos en <a href="/a/{{ s }}/e/{{ e }}?tab=alumnos">Alumnos</a>.</div>
+{% else %}
+<div class="tabla-scroll rejilla-notas">
+  <table class="rejilla notas" hx-sync="this:queue all">
+    <thead>
+      <tr>
+        <th rowspan="{{ filas_cab }}" class="col-alumno">Alumno</th>
+        <th rowspan="{{ filas_cab }}" class="col-pres">Pres.</th>
+        {% for c in cfg.criterios %}
+        {% if c.is_group %}
+        <th colspan="{{ c.subcriterios|length + 1 }}" class="grupo" title="{{ c.nombre }}">{{ c.id }}</th>
+        {% else %}
+        <th rowspan="{{ filas_cab }}" class="hoja-col" title="{{ c.nombre }}">{{ c.id }}<small>/{{ c.maximo|nota(decimales) }}</small></th>
+        {% endif %}
+        {% endfor %}
+        <th rowspan="{{ filas_cab }}" class="col-total">Total<small>/{{ cfg.nota_maxima|nota(decimales) }}</small></th>
+        <th rowspan="{{ filas_cab }}" class="col-comentario">Comentario</th>
+        <th rowspan="{{ filas_cab }}" class="col-fb" title="Comentario largo">📝</th>
+        {% if corrector == 'final' %}<th rowspan="{{ filas_cab }}" class="col-origen">Origen</th>{% endif %}
+      </tr>
+      {% if con_grupos %}
+      <tr>
+        {% for c in cfg.criterios if c.is_group %}
+        {% for leaf in c.subcriterios %}<th class="hoja-col" title="{{ leaf.nombre }}">{{ leaf.id }}<small>/{{ leaf.maximo|nota(decimales) }}</small></th>{% endfor %}
+        <th class="col-sub" title="Suma de {{ c.id }}">Σ<small>/{{ c.leaves()|sum(attribute='maximo')|nota(decimales) }}</small></th>
+        {% endfor %}
+      </tr>
+      {% endif %}
+    </thead>
+    <tbody>
+      {% for fila in filas %}
+      {% with entry = fila.entry, p = fila.p, cells = fila.cells, result = fila.result, invalid = fila.invalid, fb = fila.fb %}
+      {% include "_fila_notas.html" %}
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if fuera %}
+<section class="fuera-lista">
+  <h4>Fuera de la lista</h4>
+  <p class="ayuda">Filas de esta hoja cuyo alumno no está en la lista del examen. Se conservan; no se pueden editar aquí.</p>
+  <div class="tabla-scroll">
+    <table class="tabla-lista">
+      <thead><tr><th>Id</th><th>Alumno</th>{% for leaf in cfg.leaves() %}<th class="num">{{ leaf.id }}</th>{% endfor %}<th class="num">Total</th><th>Comentario</th></tr></thead>
+      <tbody>
+        {% for row in fuera %}
+        <tr id="fila-{{ row.get('id', '') }}">
+          <td><code>{{ row.get('id', '') }}</code></td>
+          <td>{{ row.get('alumno', '') }}</td>
+          {% for leaf in cfg.leaves() %}<td class="num">{{ row.get(leaf.id, '')|celda }}</td>{% endfor %}
+          <td class="num">{{ row.get('total', '')|celda }}</td>
+          <td>{{ row.get('comentario', '') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<dialog id="feedback" aria-label="Comentario largo">
+  <article id="feedback-contenido"></article>
+</dialog>
+{% endif %}

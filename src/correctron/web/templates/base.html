@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% if migas|length > 1 %}{{ migas[-1][0] }} · {% endif %}Correctron{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230172ad'/%3E%3Cpath d='M8 17l5 5 11-12' stroke='white' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/vendor/pico.min.css">
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/vendor/htmx.min.js"></script>
+  <script src="/static/app.js" defer></script>
+  <script src="/static/criterios.js" defer></script>
+  <script src="/static/vendor/alpine.min.js" defer></script>
+</head>
+<body>
+  <header class="barra">
+    <div class="ancho barra-int">
+      <a href="/" class="marca" title="Inicio">Correctron</a>
+      <nav aria-label="breadcrumb">
+        <ul>
+          {% for label, url in migas %}
+          <li>{% if loop.last %}<span aria-current="page">{{ label }}</span>{% else %}<a href="{{ url }}">{{ label }}</a>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <div id="avisos" aria-live="polite">
+    {% for nivel, mensaje in avisos_iniciales|default([]) %}
+    <article class="aviso-{{ nivel }}">{{ mensaje }}</article>
+    {% endfor %}
+  </div>
+  <main class="ancho">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

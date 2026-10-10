@@ -1,0 +1,41 @@
+{% if not correctores %}
+<div class="vacio">
+  <strong>Todavía no hay correctores.</strong>
+  Crea una hoja en <a href="/a/{{ s }}/e/{{ e }}?tab=notas">Notas</a> o deja que un LLM escriba <code>notas/&lt;nombre&gt;.csv</code>; aquí verás sus notas lado a lado.
+</div>
+{% else %}
+<div class="barra-acciones">
+  <nav class="filtros" aria-label="Filtro">
+    <a href="/a/{{ s }}/e/{{ e }}?tab=comparar"{% if filtro != 'discrepancias' %} aria-current="page"{% endif %}>Todos <span class="cuenta">{{ n_total }}</span></a>
+    <a href="/a/{{ s }}/e/{{ e }}?tab=comparar&filtro=discrepancias"{% if filtro == 'discrepancias' %} aria-current="page"{% endif %}>Solo discrepancias <span class="cuenta{% if n_discrepancias %} cuenta-aviso{% endif %}">{{ n_discrepancias }}</span></a>
+  </nav>
+  <form method="post" action="/a/{{ s }}/e/{{ e }}/final/copiar" class="copia-masiva">
+    <span>Copiar</span>
+    <select name="corrector" aria-label="Corrector">{% for g in correctores %}<option value="{{ g }}">{{ g }}</option>{% endfor %}</select>
+    <span>a final para los alumnos sin nota final</span>
+    <button type="submit" class="outline">Copiar</button>
+  </form>
+</div>
+<p class="ayuda">Δ = nota más alta menos la más baja entre los correctores con la nota completa; en rojo si llega al 10 % de la nota máxima. En el desglose se marcan los apartados en los que no coinciden. «Usar» copia la fila (y el comentario largo) a final.csv.</p>
+{% if filas %}
+<div class="tabla-scroll">
+  <table class="tabla-lista comparar">
+    <thead>
+      <tr>
+        <th>Alumno</th>
+        {% for g in correctores %}<th class="num">{{ g }}</th>{% endfor %}
+        <th class="num">Final</th>
+        <th class="num" title="Diferencia entre correctores">Δ</th>
+        <th>Acciones</th>
+        <th>Detalle</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in filas %}{% include "_fila_comparar.html" %}{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="vacio">{% if filtro == 'discrepancias' %}No hay discrepancias entre los correctores. ✓{% else %}La lista del examen está vacía.{% endif %}</div>
+{% endif %}
+{% endif %}

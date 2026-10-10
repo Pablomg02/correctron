@@ -1,0 +1,27 @@
+{# File list of one area plus its upload form. Needs: s, e, area, archivos, seleccionado, ver_base. #}
+<div class="lista-archivos">
+  {% if archivos %}
+  <ul class="archivos">
+    {% for f in archivos %}
+    <li{% if seleccionado and f.rel_path == seleccionado.rel_path %} class="actual"{% endif %}>
+      <a class="nombre-archivo" href="{{ ver_base }}&archivo={{ f.rel_path|urlencode }}" title="Ver {{ f.name }}">{{ '📄' if f.is_pdf else '📎' }} {{ f.name }}</a>
+      <span class="tenue">{{ f.size|tamano }}</span>
+      <span class="acciones-archivo">
+        <a href="/archivo/{{ f.rel_path }}" download title="Descargar">Descargar</a>
+        <button type="button" class="enlace peligro"
+          hx-post="/a/{{ s }}/e/{{ e }}/borrar-archivo" hx-vals='{{ {"ruta": f.rel_path}|tojson }}'
+          hx-confirm="¿Borrar «{{ f.name }}»? Se moverá a la papelera (.papelera/ en la carpeta de datos), de donde se puede recuperar.">Borrar</button>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="vacio pequeno">No hay archivos todavía.</p>
+  {% endif %}
+  <form method="post" action="/a/{{ s }}/e/{{ e }}/subir" enctype="multipart/form-data" class="subir">
+    <input type="hidden" name="destino" value="{{ area }}">
+    <label>Subir archivos <input type="file" name="archivos" multiple required></label>
+    <button type="submit" class="outline">Subir</button>
+  </form>
+  <p class="ayuda">Carpeta: <code>{{ s }}/{{ e }}/{{ area }}/</code></p>
+</div>

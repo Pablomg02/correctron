@@ -1,0 +1,46 @@
+<div class="dos-columnas ancha-derecha">
+  <aside>
+    <h3>Sesiones de revisión</h3>
+    <form method="post" action="/a/{{ s }}/e/{{ e }}/revisiones">
+      <button type="submit" class="outline">Nueva sesión de revisión</button>
+    </form>
+    {% if revisiones %}
+    <ul class="lista-revisiones">
+      {% for r in revisiones %}
+      <li{% if r == rev %} class="actual"{% endif %}><a href="/a/{{ s }}/e/{{ e }}?tab=revisiones&rev={{ r|urlencode }}"{% if r == rev %} aria-current="page"{% endif %}>{{ r }}</a></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <p class="ayuda">La nota vigente = final.csv + revisiones en orden. Puedes editar estos CSV a mano.</p>
+  </aside>
+  <section>
+    {% if not rev %}
+    <div class="vacio"><strong>No hay revisiones.</strong> Cuando revises notas con los alumnos, crea una sesión de revisión: cada sesión es un archivo <code>revisiones/NN-AAAA-MM-DD.csv</code> con los cambios y su motivo.</div>
+    {% else %}
+    <h3>{{ rev }} <small><a href="/archivo/{{ rev_rel }}" target="_blank" rel="noopener">ver CSV</a></small></h3>
+    {% if filas %}
+    <div class="tabla-scroll">
+      <table class="tabla-lista">
+        <thead><tr><th>Alumno</th><th>Cambios</th><th class="num">Total</th><th>Motivo</th><th></th></tr></thead>
+        <tbody>
+          {% for f in filas %}
+          <tr id="fila-{{ f.id }}"{% if f.id == alumno %} class="resaltada"{% endif %}>
+            <td>{{ f.alumno }}{% if not f.en_lista %} <span class="chip chip-aviso">fuera de la lista</span>{% endif %}</td>
+            <td>
+              {% for leaf, antes, despues in f.cambios %}<span class="cambio">{{ leaf }}: {{ antes|celda or '—' }} → {{ despues|celda or '—' }}</span>{% else %}<span class="tenue">sin cambios en los apartados</span>{% endfor %}
+            </td>
+            <td class="num"><span class="cambio">{{ f.total_antes|celda or '—' }} → {{ f.total_despues|celda or '—' }}</span></td>
+            <td>{{ f.motivo or '—' }}</td>
+            <td>{% if f.en_lista %}<a href="/a/{{ s }}/e/{{ e }}?tab=revisiones&rev={{ rev|urlencode }}&alumno={{ f.id|urlencode }}#form-revision" role="button" class="outline mini-boton">Editar</a>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="vacio">Esta sesión todavía no tiene cambios. Elige un alumno en el formulario para revisar su nota.</div>
+    {% endif %}
+    {% include "_form_revision.html" %}
+    {% endif %}
+  </section>
+</div>

@@ -1,0 +1,13 @@
+<header>
+  <button type="button" aria-label="Cerrar" rel="prev" onclick="this.closest('dialog').close()"></button>
+  <h3>Comentario largo · {{ alumno }}</h3>
+  <p class="ayuda">Hoja <strong>{{ corrector }}</strong> · se guarda en <code>notas/{{ corrector }}/{{ id }}.md</code> (Markdown, texto libre). Déjalo vacío para borrarlo.</p>
+</header>
+<form hx-post="/a/{{ s }}/e/{{ e }}/notas/{{ corrector }}/{{ id }}/feedback" hx-swap="none">
+  <input type="hidden" name="version" value="{{ version }}">
+  <textarea name="texto" rows="20" class="mono" spellcheck="true">{{ texto }}</textarea>
+  <footer>
+    <button type="button" class="secondary outline" onclick="this.closest('dialog').close()">Cancelar</button>
+    <button type="submit">Guardar</button>
+  </footer>
+</form>

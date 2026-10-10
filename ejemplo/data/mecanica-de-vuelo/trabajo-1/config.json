@@ -1,0 +1,12 @@
+{
+  "nombre": "Trabajo de estabilidad",
+  "tipo": "trabajo",
+  "fecha": "2026-12-15",
+  "nota_maxima": 10,
+  "decimales": 2,
+  "calculo_total": "ponderada",
+  "criterios": [
+    { "id": "memoria", "nombre": "Memoria", "maximo": 10, "peso": 2 },
+    { "id": "presentacion", "nombre": "Presentación", "maximo": 10, "peso": 1 }
+  ]
+}

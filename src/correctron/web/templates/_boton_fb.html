@@ -1,0 +1,5 @@
+<button type="button" id="fb-{{ id }}" class="fb{% if lleno %} fb-lleno{% endif %}"
+  title="{{ 'Ver o editar' if lleno else 'Escribir' }} el comentario largo (notas/{{ corrector }}/{{ id }}.md)"
+  aria-label="Comentario largo de {{ id }}"
+  hx-get="/a/{{ s }}/e/{{ e }}/notas/{{ corrector }}/{{ id }}/feedback" hx-target="#feedback-contenido"
+  {%- if desactivado %} disabled{% endif %}{% if oob %} hx-swap-oob="true"{% endif %}>📝</button>

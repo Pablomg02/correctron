@@ -1,0 +1,58 @@
+{% from "_macros.html" import total_hoja %}
+{% set id = f.entry.id %}
+{% set nombre = f.entry.apellidos ~ ', ' ~ f.entry.nombre %}
+<tr id="fila-{{ id }}" class="{% if f.p == 'no' %}np{% endif %}{% if f.any_discrepancy %} con-discrepancia{% endif %}">
+  <th scope="row" class="col-alumno">{{ nombre }}{% if f.p == 'no' %} <span class="chip chip-no">NP</span>{% endif %}</th>
+  {% for g in correctores %}
+  <td class="total-{{ g }} num">{{ total_hoja(f.graders[g][1], decimales) }}</td>
+  {% endfor %}
+  <td class="col-final num">
+    {% if f.final_row is not none %}{{ total_hoja(f.final_result, decimales) }} <span class="origen{% if f.final_row.get('origen') == 'manual' %} origen-manual{% endif %}">{{ f.final_row.get('origen', '') }}</span>{% else %}<span class="tenue">—</span>{% endif %}
+  </td>
+  <td class="col-delta num{% if f.strong %} delta-fuerte{% endif %}">{% if f.delta is not none %}{{ f.delta|nota(decimales) }}{% endif %}</td>
+  <td class="col-acciones">
+    {% for g in correctores if f.graders[g][0] is not none %}
+    <button type="button" class="mini-boton{% if f.final_row is not none and f.final_row.get('origen') == g %} usado{% endif %}"
+      hx-post="/a/{{ s }}/e/{{ e }}/final/{{ id }}/usar" hx-vals='{{ {"corrector": g}|tojson }}'
+      hx-target="#fila-{{ id }}" hx-swap="outerHTML"
+      {%- if f.final_row is not none %} hx-confirm="¿Sustituir la nota final de {{ nombre }} por la de {{ g }}?"{% endif %}>Usar {{ g }}</button>
+    {% endfor %}
+  </td>
+  <td class="col-desglose">
+    <details>
+      <summary>Desglose{% if f.discrepant_leaves %} <span class="chip chip-aviso" title="Apartados en los que los correctores no coinciden">{{ f.discrepant_leaves|length }}</span>{% endif %}</summary>
+      <table class="desglose">
+        <thead><tr><th></th>{% for g in correctores %}<th>{{ g }}</th>{% endfor %}<th class="col-final-celda">final</th></tr></thead>
+        <tbody>
+          {% for c in cfg.criterios %}
+          {% if c.is_group %}<tr class="grupo-fila"><th colspan="{{ correctores|length + 2 }}">{{ c.id }} · {{ c.nombre }}</th></tr>{% endif %}
+          {% for leaf in c.leaves() %}
+          <tr>
+            <th class="{% if c.is_group %}sub{% endif %}" title="{{ leaf.nombre }}">{{ leaf.id }} <small>/{{ leaf.maximo|nota(decimales) }}</small></th>
+            {% for g in correctores %}
+            {% set row = f.graders[g][0] %}
+            {% set raw = row.get(leaf.id, '') if row is not none else '' %}
+            <td{% if leaf.id in f.discrepant_leaves and raw.strip() %} class="discrepa"{% endif %}>{{ raw|celda }}</td>
+            {% endfor %}
+            <td class="col-final-celda">{{ (f.final_row.get(leaf.id, '') if f.final_row is not none else '')|celda }}</td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+          <tr class="fila-total">
+            <th>Total</th>
+            {% for g in correctores %}<td>{{ total_hoja(f.graders[g][1], decimales) }}</td>{% endfor %}
+            <td class="col-final-celda">{{ total_hoja(f.final_result, decimales) }}</td>
+          </tr>
+          <tr class="fila-comentario">
+            <th>Comentario</th>
+            {% for g in correctores %}
+            {% set row = f.graders[g][0] %}
+            <td>{{ row.get('comentario', '') if row is not none else '' }}{% if f.feedback.get(g) %} <a href="/archivo/{{ s }}/{{ e }}/notas/{{ g }}/{{ id }}.md" target="_blank" rel="noopener" title="Comentario largo de {{ g }}">📝 largo</a>{% endif %}</td>
+            {% endfor %}
+            <td class="col-final-celda">{{ f.final_row.get('comentario', '') if f.final_row is not none else '' }}{% if f.feedback.get('final') %} <a href="/archivo/{{ s }}/{{ e }}/notas/final/{{ id }}.md" target="_blank" rel="noopener">📝 largo</a>{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+    </details>
+  </td>
+</tr>

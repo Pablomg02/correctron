@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+{% include "_sondeo.html" %}
+<hgroup class="cabecera">
+  <h1>{{ nombre_examen }}</h1>
+  <p>
+    {% if cfg %}
+    <span class="chip">{{ cfg.tipo|capitalize }}</span>
+    {% if cfg.fecha %}{{ cfg.fecha }} · {% endif %}nota máxima {{ cfg.nota_maxima|nota(cfg.decimales) }} ·
+    {% if cfg.effective_mode() == 'suma' %}total = suma de apartados{% elif cfg.effective_mode() == 'ponderada' %}total = media ponderada{% else %}total escrito a mano{% endif %} ·
+    {% else %}
+    <span class="chip chip-error">config.json con errores</span>
+    {% endif %}
+    <code>{{ s }}/{{ e }}/</code>
+  </p>
+</hgroup>
+<nav class="pestanas" aria-label="Secciones del examen">
+  {% for clave, etiqueta in EXAM_TABS.items() %}
+  <a href="/a/{{ s }}/e/{{ e }}?tab={{ clave }}"{% if clave == tab %} aria-current="page"{% endif %}>{{ etiqueta }}</a>
+  {% endfor %}
+</nav>
+{% if bloqueada %}
+<div class="vacio">
+  <strong>Corrige config.json para continuar.</strong>
+  Esta sección necesita una configuración válida. <a href="/a/{{ s }}/e/{{ e }}?tab=config">Ir a Configuración</a>
+</div>
+{% else %}
+{% include "examen_" ~ tab ~ ".html" %}
+{% endif %}
+{% endblock %}

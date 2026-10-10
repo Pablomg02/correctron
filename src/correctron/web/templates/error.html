@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Error {{ codigo }} · Correctron{% endblock %}
+{% block content %}
+<article class="pagina-error">
+  <h2>{% if codigo == 404 %}No encontrado{% elif codigo == 409 %}El archivo ha cambiado{% elif codigo == 400 %}Datos no válidos{% else %}Error {{ codigo }}{% endif %}</h2>
+  {% include "_banner.html" with context %}
+  <p>
+    {% if volver %}<a href="{{ volver }}" role="button" class="outline">Volver</a>{% endif %}
+    <a href="/" role="button" class="secondary outline">Ir al inicio</a>
+  </p>
+</article>
+{% endblock %}

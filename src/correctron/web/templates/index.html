@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<hgroup class="cabecera">
+  <h1>Asignaturas</h1>
+  <p>Datos en <code>{{ raiz }}</code> · guía del formato en <a href="/archivo/LEEME.md" target="_blank" rel="noopener">LEEME.md</a></p>
+</hgroup>
+<div class="dos-columnas ancha-izquierda">
+  <section>
+    {% if asignaturas %}
+    <div class="tabla-scroll">
+      <table class="tabla-lista">
+        <thead><tr><th>Asignatura</th><th>Curso</th><th class="num">Alumnos</th><th class="num">Exámenes y trabajos</th></tr></thead>
+        <tbody>
+          {% for a in asignaturas %}
+          <tr>
+            <td><a href="/a/{{ a.slug }}"><strong>{{ a.nombre }}</strong></a><br><small class="tenue"><code>{{ a.slug }}/</code></small></td>
+            <td>{{ a.curso or '—' }}</td>
+            <td class="num">{{ a.n_students }}</td>
+            <td class="num">{{ a.n_exams }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="vacio">
+      <strong>Todavía no hay ninguna asignatura.</strong>
+      Crea la primera con el formulario. Cada asignatura es una carpeta dentro de la carpeta de datos.
+    </div>
+    {% endif %}
+  </section>
+  <article class="tarjeta">
+    <h3>Nueva asignatura</h3>
+    <form method="post" action="/asignaturas">
+      <label>Nombre <input name="nombre" required placeholder="p. ej. Física I"></label>
+      <label>Curso <input name="curso" placeholder="p. ej. 2026-2027"></label>
+      <button type="submit">Crear asignatura</button>
+    </form>
+  </article>
+</div>
+{% endblock %}

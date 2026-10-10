@@ -1,0 +1,115 @@
+{% if errores %}
+<div class="banner banner-error" role="alert">
+  <div>
+    <strong>No se ha guardado nada: la configuración tiene errores.</strong>
+    <ul>{% for i in errores %}<li>{{ i.message }}</li>{% endfor %}</ul>
+  </div>
+</div>
+{% elif config_errores_actuales %}
+<div class="banner banner-error" role="alert">
+  <div>
+    <strong>config.json tiene errores y no se puede usar.</strong> Corrígelo en el editor de abajo.
+    <ul>{% for i in config_errores_actuales %}<li>{{ i.message }}</li>{% endfor %}</ul>
+  </div>
+</div>
+{% endif %}
+{% for a in config_avisos %}
+<div class="banner banner-aviso">{{ a.message }}</div>
+{% endfor %}
+{% if huerfanas %}
+<div class="banner banner-aviso">Las columnas {{ huerfanas|join(', ') }} siguen en los CSV de notas y se conservan como columnas desconocidas. Si renombraste un criterio, cambia también la cabecera de esos CSV.</div>
+{% endif %}
+
+{% if config_datos is not none %}
+<script type="application/json" id="config-datos">{{ config_datos|tojson }}</script>
+<form method="post" action="/a/{{ s }}/e/{{ e }}/config" x-data="editorCriterios()" @submit="serialize()" class="editor-config">
+  <input type="hidden" name="config_json" x-ref="salida">
+  <input type="hidden" id="version-config" name="version" value="{{ cfg_version }}">
+  <input type="hidden" name="editor" value="visual">
+  <div class="dos-columnas ancha-derecha">
+    <article class="tarjeta">
+      <h3>Datos</h3>
+      <label>Nombre <input x-model="nombre" required></label>
+      <div class="grid">
+        <label>Tipo
+          <select x-model="tipo"><option value="examen">Examen</option><option value="trabajo">Trabajo</option></select>
+        </label>
+        <label>Fecha <input type="date" x-model="fecha"></label>
+      </div>
+      <div class="grid">
+        <label>Nota máxima <input type="text" inputmode="decimal" x-model="nota_maxima" required></label>
+        <label>Decimales <input type="number" step="1" min="0" max="4" x-model="decimales" required></label>
+      </div>
+      <label>Cálculo del total
+        <select x-model="calculo_total">
+          <option value="suma">Suma de apartados</option>
+          <option value="ponderada">Media ponderada</option>
+          <option value="manual">Manual</option>
+        </select>
+      </label>
+      <p class="ayuda" x-text="criterios.length ? explicaciones[calculo_total] : 'Sin criterios, la nota total se escribe siempre a mano.'"></p>
+    </article>
+
+    <article class="tarjeta">
+      <h3>Criterios</h3>
+      <p class="ayuda">Cada apartado con máximo es una columna en los CSV de notas. Un criterio con subapartados es un grupo: su nota es la suma de sus subapartados.</p>
+      <template x-if="!criterios.length">
+        <div class="vacio">Todavía no hay criterios. Añade uno por ejercicio; luego puedes dividirlo en subapartados.</div>
+      </template>
+      <ol class="criterios">
+        <template x-for="(c, i) in criterios" :key="c._k">
+          <li class="criterio">
+            <div class="criterio-fila">
+              <input class="c-id" x-model="c.id" placeholder="id" aria-label="Id del criterio" required>
+              <input class="c-nombre" x-model="c.nombre" placeholder="Nombre" aria-label="Nombre del criterio">
+              <label class="c-num" x-show="!c.subcriterios.length">máx <input type="text" inputmode="decimal" x-model="c.maximo" aria-label="Máximo"></label>
+              <span class="c-num tenue" x-show="c.subcriterios.length" x-text="'máx ' + fmt(groupMax(c))"></span>
+              <label class="c-num" x-show="calculo_total === 'ponderada'">peso <input type="text" inputmode="decimal" x-model="c.peso" aria-label="Peso"></label>
+              <span class="botones-mini">
+                <button type="button" class="mini" title="Subir" @click="moveCriterion(i, -1)" :disabled="i === 0">↑</button>
+                <button type="button" class="mini" title="Bajar" @click="moveCriterion(i, 1)" :disabled="i === criterios.length - 1">↓</button>
+                <button type="button" class="mini peligro" title="Quitar" @click="removeCriterion(i)">✕</button>
+              </span>
+            </div>
+            <ol class="subcriterios" x-show="c.subcriterios.length">
+              <template x-for="(sc, j) in c.subcriterios" :key="sc._k">
+                <li class="criterio-fila">
+                  <input class="c-id" x-model="sc.id" placeholder="id" aria-label="Id del subapartado" required>
+                  <input class="c-nombre" x-model="sc.nombre" placeholder="Nombre" aria-label="Nombre del subapartado">
+                  <label class="c-num">máx <input type="text" inputmode="decimal" x-model="sc.maximo" aria-label="Máximo"></label>
+                  <span class="botones-mini">
+                    <button type="button" class="mini" title="Subir" @click="moveSub(i, j, -1)" :disabled="j === 0">↑</button>
+                    <button type="button" class="mini" title="Bajar" @click="moveSub(i, j, 1)" :disabled="j === c.subcriterios.length - 1">↓</button>
+                    <button type="button" class="mini peligro" title="Quitar" @click="removeSub(i, j)">✕</button>
+                  </span>
+                </li>
+              </template>
+            </ol>
+            <button type="button" class="enlace" @click="addSub(i)">+ Añadir subapartado</button>
+          </li>
+        </template>
+      </ol>
+      <button type="button" class="secondary outline" @click="addCriterion()">+ Añadir criterio</button>
+      <p class="suma-maximos" :class="{ 'suma-distinta': sumaDistinta }" x-show="criterios.length">
+        Suma de máximos: <strong x-text="fmt(sumaMaximos)"></strong> / nota máxima <strong x-text="fmt(Number(String(nota_maxima).replace(',', '.')))"></strong>
+        <span x-show="sumaDistinta"> — no coinciden</span>
+      </p>
+    </article>
+  </div>
+  <div class="barra-guardar">
+    <button type="submit">Guardar configuración</button>
+    <span class="ayuda">Se guarda en <code>{{ s }}/{{ e }}/config.json</code>. Las notas ya puestas no se borran.</span>
+  </div>
+</form>
+{% endif %}
+
+<details class="tarjeta editor-json"{% if config_datos is none or editor == 'json' %} open{% endif %}>
+  <summary>Editar JSON directamente</summary>
+  <form method="post" action="/a/{{ s }}/e/{{ e }}/config">
+    <input type="hidden" name="version" value="{{ cfg_version }}">
+    <input type="hidden" name="editor" value="json">
+    <p class="ayuda">El formato está descrito en <a href="/archivo/LEEME.md" target="_blank" rel="noopener">LEEME.md</a>. Al guardar, el archivo se reescribe con formato normalizado.</p>
+    <textarea name="config_json" rows="22" class="mono" spellcheck="false">{{ config_texto }}</textarea>
+    <button type="submit">Guardar JSON</button>
+  </form>
+</details>

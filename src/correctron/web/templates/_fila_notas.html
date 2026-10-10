@@ -1,0 +1,32 @@
+{% from "_macros.html" import subtotal, total_calculado, origen, error_fila, chip_presentado %}
+{% set id = entry.id %}
+{% set np = p == 'no' %}
+{% set modo = cfg.effective_mode() %}
+{% macro celda(col, clase='num') -%}
+<input id="c-{{ id }}-{{ col }}" name="{{ col }}" value="{{ cells.get(col, '')|celda if clase == 'num' else cells.get(col, '') }}" class="{{ clase }}" autocomplete="off"
+  {%- if clase == 'num' %} inputmode="decimal"{% endif %}
+  aria-label="{{ col }} de {{ entry.apellidos }}, {{ entry.nombre }}"
+  {%- if col in invalid %} aria-invalid="true" title="{{ invalid[col] }}"{% endif %}
+  {%- if np or solo_lectura|default(false) %} disabled{% endif %}
+  hx-post="/a/{{ s }}/e/{{ e }}/notas/{{ corrector }}/{{ id }}" hx-trigger="change"
+  hx-include="closest tr, #version-hoja" hx-swap="none">
+{%- endmacro %}
+<tr id="fila-{{ id }}"{% if np %} class="np"{% endif %}>
+  <th scope="row" class="col-alumno">
+    <span class="nombre">{{ entry.apellidos }}, {{ entry.nombre }}</span>
+    {{ error_fila(id, invalid) }}
+  </th>
+  <td class="col-pres">{{ chip_presentado(p, entry.presentado) }}</td>
+  {% for c in cfg.criterios %}
+  {% for leaf in c.leaves() %}<td>{{ celda(leaf.id) }}</td>{% endfor %}
+  {% if c.is_group %}<td class="col-sub">{{ subtotal(id, c.id, result.groups.get(c.id), decimales) }}</td>{% endif %}
+  {% endfor %}
+  <td class="col-total">
+    {% if np %}<span class="chip chip-no">NP</span>
+    {% elif modo == 'manual' %}{{ celda('total') }}
+    {% else %}{{ total_calculado(id, result, decimales) }}{% endif %}
+  </td>
+  <td class="col-comentario">{{ celda('comentario', 'texto') }}</td>
+  <td class="col-fb">{% with lleno = fb, desactivado = np %}{% include "_boton_fb.html" %}{% endwith %}</td>
+  {% if corrector == 'final' %}<td class="col-origen">{{ origen(id, cells.get('origen', '')) }}</td>{% endif %}
+</tr>

@@ -1,0 +1,15 @@
+{
+  "nombre": "Primer parcial",
+  "tipo": "examen",
+  "fecha": "2026-11-03",
+  "nota_maxima": 10,
+  "decimales": 2,
+  "calculo_total": "suma",
+  "criterios": [
+    { "id": "ej1", "nombre": "Ejercicio 1", "peso": 1, "subcriterios": [
+        { "id": "ej1a", "nombre": "Apartado a", "maximo": 2 },
+        { "id": "ej1b", "nombre": "Apartado b", "maximo": 2 } ] },
+    { "id": "ej2", "nombre": "Ejercicio 2", "maximo": 3, "peso": 1 },
+    { "id": "ej3", "nombre": "Ejercicio 3", "maximo": 3, "peso": 1 }
+  ]
+}

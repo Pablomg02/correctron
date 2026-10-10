@@ -1,0 +1,2 @@
+{% from "_macros.html" import campo_alumno %}
+{% for campo in campos %}{{ campo_alumno(s, st, campo, oob=True) }}{% endfor %}

@@ -1,0 +1,4 @@
+<input type="hidden" id="huella-actual" name="huella" value="{{ huella }}" hx-swap-oob="true">
+{% if version_id %}
+<input type="hidden" id="{{ version_id }}" name="version" value="{{ version }}" hx-swap-oob="true">
+{% endif %}

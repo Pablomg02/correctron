@@ -1,0 +1,48 @@
+<div id="panel-alumnos">
+  <input type="hidden" id="version-lista" name="version" value="{{ sl.version }}">
+  {% if sl.table.malformed %}
+  <div class="banner banner-error">«alumnos.csv» tiene filas con más celdas que la cabecera (líneas {{ sl.table.malformed|join(', ') }}). Corrígelo a mano: mientras tanto no se puede modificar desde aquí.</div>
+  {% endif %}
+  {% if sl.students %}
+  <p class="ayuda">{{ sl.students|length }} alumnos. Los cambios se guardan al salir de cada casilla. Intro baja a la fila siguiente.</p>
+  <div class="tabla-scroll">
+    <table class="rejilla tabla-alumnos">
+      <thead>
+        <tr><th>Apellidos</th><th>Nombre</th><th>Email</th><th>Observaciones</th><th>Id</th><th><span class="sr">Acciones</span></th></tr>
+      </thead>
+      <tbody>
+        {% for st in sl.students %}{% include "_fila_alumno.html" %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="vacio">
+    <strong>Todavía no hay alumnos en esta asignatura.</strong>
+    Añádelos uno a uno con el formulario de abajo o pega una lista desde una hoja de cálculo en «Importar varios».
+  </div>
+  {% endif %}
+
+  <div class="dos-columnas">
+    <article class="tarjeta">
+      <h3>Añadir alumno</h3>
+      <form hx-post="/a/{{ s }}/alumnos" hx-include="#version-lista" hx-target="#panel-alumnos" hx-swap="outerHTML">
+        <div class="grid">
+          <label>Apellidos <input name="apellidos" required autocomplete="off"{% if enfocar_alta|default(false) %} autofocus{% endif %}></label>
+          <label>Nombre <input name="nombre" required autocomplete="off"></label>
+        </div>
+        <label>Email <input name="email" type="email" autocomplete="off"></label>
+        <button type="submit">Añadir</button>
+      </form>
+    </article>
+    <article class="tarjeta">
+      <details{% if import_abierto %} open{% endif %}>
+        <summary><h3 class="en-linea">Importar varios</h3></summary>
+        <form hx-post="/a/{{ s }}/importar-alumnos" hx-include="#version-lista" hx-target="#panel-alumnos" hx-swap="outerHTML">
+          <p class="ayuda">Un alumno por línea: <code>Apellidos, Nombre[, email]</code>, o columnas copiadas de una hoja de cálculo (Apellidos ⇥ Nombre ⇥ email). Si alguna línea no se entiende, no se importa nada.</p>
+          <textarea name="texto" rows="6" placeholder="Pérez Castro, Hugo, hugo@example.org&#10;García Pérez, Lucía">{{ texto_import|default('') }}</textarea>
+          <button type="submit">Importar</button>
+        </form>
+      </details>
+    </article>
+  </div>
+</div>

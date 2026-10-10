@@ -1,0 +1,60 @@
+<div id="panel-roster">
+  <input type="hidden" id="version-lista" name="version" value="{{ roster.version }}">
+  {% if roster.table.malformed %}
+  <div class="banner banner-error">«alumnos.csv» del examen tiene filas con más celdas que la cabecera (líneas {{ roster.table.malformed|join(', ') }}). Corrígelo a mano: mientras tanto no se puede modificar desde aquí.</div>
+  {% endif %}
+  <div class="dos-columnas ancha-izquierda">
+    <section>
+      {% if roster.entries %}
+      <div class="barra-acciones">
+        <p class="ayuda">{{ roster.entries|length }} alumnos en la lista. Los cambios se guardan al momento.</p>
+        <button type="button" class="outline"
+          hx-post="/a/{{ s }}/e/{{ e }}/marcar-presentados" hx-include="#version-lista"
+          hx-target="#panel-roster" hx-swap="outerHTML">Marcar todos los sin marcar como presentados</button>
+      </div>
+      <div class="tabla-scroll">
+        <table class="rejilla tabla-roster">
+          <thead><tr><th>Alumno</th><th>Presentado</th><th>Observaciones</th><th><span class="sr">Acciones</span></th></tr></thead>
+          <tbody>
+            {% for en in roster.entries %}{% include "_fila_roster.html" %}{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="vacio"><strong>La lista del examen está vacía.</strong> Añade alumnos de la asignatura con el panel de la derecha.</div>
+      {% endif %}
+    </section>
+    <aside>
+      <section id="no-en-examen" class="tarjeta">
+        <h4>En la asignatura pero no en el examen</h4>
+        {% if solo_asignatura %}
+        <form hx-post="/a/{{ s }}/e/{{ e }}/alumnos" hx-include="#version-lista" hx-target="#panel-roster" hx-swap="outerHTML">
+          <ul class="lista-casillas">
+            {% for st in solo_asignatura %}
+            <li><label><input type="checkbox" name="ids" value="{{ st.id }}"> {{ st.apellidos }}, {{ st.nombre }} <small class="tenue"><code>{{ st.id }}</code></small></label></li>
+            {% endfor %}
+          </ul>
+          <div class="botones">
+            <button type="submit" class="outline">Añadir seleccionados</button>
+            <button type="button" hx-post="/a/{{ s }}/e/{{ e }}/alumnos" hx-vals='{"todos": "1"}'
+              hx-include="#version-lista" hx-target="#panel-roster" hx-swap="outerHTML">Añadir todos</button>
+          </div>
+        </form>
+        {% else %}
+        <p class="tenue">Todos los alumnos de la asignatura están en el examen.</p>
+        {% endif %}
+      </section>
+      {% if solo_examen %}
+      <section id="no-en-asignatura" class="tarjeta tarjeta-aviso">
+        <h4>En el examen pero no en la asignatura</h4>
+        <p class="ayuda">Están en la lista del examen pero no en la de la asignatura. Puedes quitarlos de aquí o añadirlos a la asignatura.</p>
+        <ul class="lista-plana">
+          {% for en in solo_examen %}
+          <li>{{ en.apellidos }}, {{ en.nombre }} <small><code>{{ en.id }}</code></small></li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </aside>
+  </div>
+</div>

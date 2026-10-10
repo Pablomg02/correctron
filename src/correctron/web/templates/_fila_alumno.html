@@ -1,0 +1,14 @@
+{% from "_macros.html" import campo_alumno %}
+<tr id="fila-{{ st.id }}"{% if st.id in resaltar|default([]) %} class="resaltada"{% endif %}>
+  <td>{{ campo_alumno(s, st, 'apellidos') }}</td>
+  <td>{{ campo_alumno(s, st, 'nombre') }}</td>
+  <td>{{ campo_alumno(s, st, 'email') }}</td>
+  <td>{{ campo_alumno(s, st, 'observaciones') }}</td>
+  <td class="col-id"><code>{{ st.id }}</code></td>
+  <td class="col-accion">
+    <button type="button" class="boton-quitar" title="Quitar de la asignatura"
+      hx-post="/a/{{ s }}/alumnos/{{ st.id }}/borrar" hx-include="#version-lista"
+      hx-target="#panel-alumnos" hx-swap="outerHTML"
+      hx-confirm="¿Quitar a {{ st.nombre }} {{ st.apellidos }} de la asignatura? Sus notas y entregas no se borran.">Quitar</button>
+  </td>
+</tr>
