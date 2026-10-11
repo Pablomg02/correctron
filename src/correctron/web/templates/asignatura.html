@@ -1,16 +1,20 @@
 {% extends "base.html" %}
-{% from "_macros.html" import lista_problemas %}
+{% from "_macros.html" import lista_problemas, icono %}
 {% block content %}
 {% include "_sondeo.html" %}
 <hgroup class="cabecera">
   <h1>{{ meta.nombre }}</h1>
-  <p>{% if meta.curso %}{{ meta.curso }} · {% endif %}{% if meta.codigo %}{{ meta.codigo }} · {% endif %}<code>{{ s }}/</code></p>
+  <p class="meta">
+    {% if meta.curso %}<span>{{ icono('calendario') }} {{ meta.curso }}</span>{% endif %}
+    {% if meta.codigo %}<span class="chip chip-tipo">{{ meta.codigo }}</span>{% endif %}
+    <span>{{ icono('carpeta') }} <code>{{ s }}/</code></span>
+  </p>
 </hgroup>
 <nav class="pestanas" aria-label="Secciones de la asignatura">
-  <a href="/a/{{ s }}?tab=alumnos"{% if tab == 'alumnos' %} aria-current="page"{% endif %}>Alumnos <span id="cuenta-alumnos" class="cuenta">{{ sl.students|length }}</span></a>
-  <a href="/a/{{ s }}?tab=examenes"{% if tab == 'examenes' %} aria-current="page"{% endif %}>Exámenes y trabajos <span class="cuenta">{{ examenes|length }}</span></a>
-  <a href="/a/{{ s }}?tab=datos"{% if tab == 'datos' %} aria-current="page"{% endif %}>Datos</a>
-  <a href="/a/{{ s }}?tab=problemas"{% if tab == 'problemas' %} aria-current="page"{% endif %}>Problemas{% if n_problemas %} <span class="cuenta cuenta-aviso">{{ n_problemas }}</span>{% endif %}</a>
+  <a href="/a/{{ s }}?tab=alumnos"{% if tab == 'alumnos' %} aria-current="page"{% endif %}>{{ icono('alumnos') }} Alumnos <span id="cuenta-alumnos" class="cuenta">{{ sl.students|length }}</span></a>
+  <a href="/a/{{ s }}?tab=examenes"{% if tab == 'examenes' %} aria-current="page"{% endif %}>{{ icono('examenes') }} Exámenes y trabajos <span class="cuenta">{{ examenes|length }}</span></a>
+  <a href="/a/{{ s }}?tab=datos"{% if tab == 'datos' %} aria-current="page"{% endif %}>{{ icono('datos') }} Datos</a>
+  <a href="/a/{{ s }}?tab=problemas"{% if tab == 'problemas' %} aria-current="page"{% endif %}>{{ icono('problemas') }} Problemas{% if n_problemas %} <span class="cuenta cuenta-aviso">{{ n_problemas }}</span>{% endif %}</a>
 </nav>
 
 {% if tab == 'alumnos' %}
@@ -20,32 +24,28 @@
 <div class="dos-columnas ancha-izquierda">
   <section>
     {% if examenes %}
-    <div class="tabla-scroll">
-      <table class="tabla-lista">
-        <thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha</th><th class="num">Alumnos</th><th class="num">Presentados</th></tr></thead>
-        <tbody>
-          {% for ex in examenes %}
-          <tr>
-            <td>
-              <a href="/a/{{ s }}/e/{{ ex.slug }}"><strong>{{ ex.nombre }}</strong></a>
-              {% if not ex.config_ok %}<span class="chip chip-mal" title="config.json tiene errores">⚠ config.json</span>{% endif %}
-              <br><small class="tenue"><code>{{ ex.slug }}/</code></small>
-            </td>
-            <td>{{ ex.tipo|capitalize or '—' }}</td>
-            <td>{{ ex.fecha or '—' }}</td>
-            <td class="num">{{ ex.n_roster }}</td>
-            <td class="num">{{ ex.n_presentados }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <ul class="rejilla-tarjetas">
+      {% for ex in examenes %}
+      <li>
+        <a class="tarjeta-enlace" href="/a/{{ s }}/e/{{ ex.slug }}">
+          <span class="tarjeta-icono{% if ex.tipo == 'trabajo' %} icono-trabajo{% endif %}">{{ icono('enunciado' if ex.tipo == 'trabajo' else 'examenes') }}</span>
+          <span class="tarjeta-titulo">{{ ex.nombre }}
+            {% if not ex.config_ok %}<span class="chip chip-mal" title="config.json tiene errores">⚠ config.json</span>{% endif %}</span>
+          <span class="tarjeta-sub">{{ ex.tipo|capitalize or '—' }}{% if ex.fecha %} · {{ ex.fecha }}{% endif %} · <code>{{ ex.slug }}/</code></span>
+          <span class="tarjeta-datos">
+            <span><strong>{{ ex.n_roster }}</strong> en la lista</span>
+            <span><strong>{{ ex.n_presentados }}</strong> {{ 'presentado' if ex.n_presentados == 1 else 'presentados' }}</span>
+          </span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
     {% else %}
     <div class="vacio"><strong>Todavía no hay exámenes ni trabajos.</strong> Crea uno con el formulario; después podrás definir sus criterios.</div>
     {% endif %}
   </section>
   <article class="tarjeta">
-    <h3>Nuevo examen o trabajo</h3>
+    <h3>{{ icono('mas') }} Nuevo examen o trabajo</h3>
     <form method="post" action="/a/{{ s }}/examenes">
       <label>Nombre <input name="nombre" required placeholder="p. ej. Segundo parcial"></label>
       <div class="grid">

@@ -1,22 +1,24 @@
 {% extends "base.html" %}
+{% from "_macros.html" import icono %}
 {% block content %}
 {% include "_sondeo.html" %}
 <hgroup class="cabecera">
   <h1>{{ nombre_examen }}</h1>
-  <p>
+  <p class="meta">
     {% if cfg %}
-    <span class="chip">{{ cfg.tipo|capitalize }}</span>
-    {% if cfg.fecha %}{{ cfg.fecha }} · {% endif %}nota máxima {{ cfg.nota_maxima|nota(cfg.decimales) }} ·
-    {% if cfg.effective_mode() == 'suma' %}total = suma de apartados{% elif cfg.effective_mode() == 'ponderada' %}total = media ponderada{% else %}total escrito a mano{% endif %} ·
+    <span class="chip chip-tipo">{{ cfg.tipo|capitalize }}</span>
+    {% if cfg.fecha %}<span>{{ icono('calendario') }} {{ cfg.fecha }}</span>{% endif %}
+    <span>Nota máxima <strong>{{ cfg.nota_maxima|nota(cfg.decimales) }}</strong></span>
+    <span>{% if cfg.effective_mode() == 'suma' %}Total = suma de apartados{% elif cfg.effective_mode() == 'ponderada' %}Total = media ponderada{% else %}Total escrito a mano{% endif %}</span>
     {% else %}
     <span class="chip chip-error">config.json con errores</span>
     {% endif %}
-    <code>{{ s }}/{{ e }}/</code>
+    <span>{{ icono('carpeta') }} <code>{{ s }}/{{ e }}/</code></span>
   </p>
 </hgroup>
 <nav class="pestanas" aria-label="Secciones del examen">
   {% for clave, etiqueta in EXAM_TABS.items() %}
-  <a href="/a/{{ s }}/e/{{ e }}?tab={{ clave }}"{% if clave == tab %} aria-current="page"{% endif %}>{{ etiqueta }}</a>
+  <a href="/a/{{ s }}/e/{{ e }}?tab={{ clave }}"{% if clave == tab %} aria-current="page"{% endif %}>{{ icono(clave) }} {{ etiqueta }}</a>
   {% endfor %}
 </nav>
 {% if bloqueada %}

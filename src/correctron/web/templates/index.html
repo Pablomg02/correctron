@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import icono %}
 {% block content %}
 <hgroup class="cabecera">
   <h1>Asignaturas</h1>
@@ -7,21 +8,21 @@
 <div class="dos-columnas ancha-izquierda">
   <section>
     {% if asignaturas %}
-    <div class="tabla-scroll">
-      <table class="tabla-lista">
-        <thead><tr><th>Asignatura</th><th>Curso</th><th class="num">Alumnos</th><th class="num">Exámenes y trabajos</th></tr></thead>
-        <tbody>
-          {% for a in asignaturas %}
-          <tr>
-            <td><a href="/a/{{ a.slug }}"><strong>{{ a.nombre }}</strong></a><br><small class="tenue"><code>{{ a.slug }}/</code></small></td>
-            <td>{{ a.curso or '—' }}</td>
-            <td class="num">{{ a.n_students }}</td>
-            <td class="num">{{ a.n_exams }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <ul class="rejilla-tarjetas">
+      {% for a in asignaturas %}
+      <li>
+        <a class="tarjeta-enlace" href="/a/{{ a.slug }}">
+          <span class="tarjeta-icono">{{ icono('libro') }}</span>
+          <span class="tarjeta-titulo">{{ a.nombre }}</span>
+          <span class="tarjeta-sub">{{ a.curso or 'Sin curso' }} · <code>{{ a.slug }}/</code></span>
+          <span class="tarjeta-datos">
+            <span><strong>{{ a.n_students }}</strong> {{ 'alumno' if a.n_students == 1 else 'alumnos' }}</span>
+            <span><strong>{{ a.n_exams }}</strong> {{ 'examen o trabajo' if a.n_exams == 1 else 'exámenes y trabajos' }}</span>
+          </span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
     {% else %}
     <div class="vacio">
       <strong>Todavía no hay ninguna asignatura.</strong>
@@ -30,7 +31,7 @@
     {% endif %}
   </section>
   <article class="tarjeta">
-    <h3>Nueva asignatura</h3>
+    <h3>{{ icono('mas') }} Nueva asignatura</h3>
     <form method="post" action="/asignaturas">
       <label>Nombre <input name="nombre" required placeholder="p. ej. Física I"></label>
       <label>Curso <input name="curso" placeholder="p. ej. 2026-2027"></label>
