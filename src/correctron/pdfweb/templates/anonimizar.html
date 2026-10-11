@@ -27,9 +27,9 @@
       <button type="button" class="secondary outline" :disabled="actual >= total" @click="irA(actual + 1)">Siguiente ›</button>
     </span>
     <span class="exportar">
-      <button type="button" :disabled="recuadros.length === 0 || ocupado"
+      <button type="button" class="boton-exportar" :disabled="recuadros.length === 0 || ocupado"
               @click="exportar(false)">Exportar este PDF</button>
-      <button type="button" class="secondary outline" :disabled="recuadros.length === 0 || ocupado"
+      <button type="button" class="boton-exportar outline" :disabled="recuadros.length === 0 || ocupado"
               @click="exportar(true)">{{ 'Aplicar al único PDF de esta carpeta' if en_carpeta == 1 else 'Aplicar a los %d PDFs de esta carpeta' % en_carpeta }}</button>
     </span>
   </div>

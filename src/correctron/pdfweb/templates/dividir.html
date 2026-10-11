@@ -16,7 +16,7 @@
     <input type="text" x-ref="nombre" x-model="nombre" placeholder="Nombre de la sección"
            aria-label="Nombre de la sección" @keydown.enter.prevent="seccionar()">
     <button type="button" :disabled="!puedeSeccionar()" @click="seccionar()">Seccionar</button>
-    <button type="button" class="secondary outline" :disabled="secciones.length === 0"
+    <button type="button" class="boton-exportar" :disabled="secciones.length === 0"
             @click="exportar()">Exportar</button>
   </div>
 

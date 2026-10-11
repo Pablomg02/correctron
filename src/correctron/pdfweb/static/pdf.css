@@ -321,12 +321,6 @@ dialog.zoom::backdrop {
   margin: 0;
 }
 
-.barra-anonimizar button.activa {
-  background: var(--marca-suave);
-  color: var(--marca);
-  border-color: var(--marca);
-}
-
 .barra-anonimizar .color-campo {
   display: flex;
   align-items: center;
@@ -499,4 +493,72 @@ dialog.zoom::backdrop {
     overflow-x: auto;
     overflow-y: hidden;
   }
+}
+
+/* --- Buttons ---
+   Pico's grey outline makes enabled tool buttons look disabled. Here: secondary
+   buttons are white with brand colour, export is green, disabled is clearly flat. */
+
+button:not(:disabled),
+[role="button"] {
+  box-shadow: var(--sombra-media);
+}
+
+button.secondary.outline,
+[role="button"].secondary.outline {
+  background: var(--superficie);
+  color: var(--marca);
+  border-color: var(--marca);
+}
+
+button.secondary.outline:hover:not(:disabled),
+[role="button"].secondary.outline:hover {
+  background: var(--marca-suave);
+  color: #2638a8;
+  border-color: #2638a8;
+}
+
+button.boton-exportar {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #fff;
+}
+
+button.boton-exportar:hover:not(:disabled) {
+  background: #11692f;
+  border-color: #11692f;
+}
+
+button.boton-exportar.outline {
+  background: var(--superficie);
+  color: var(--ok);
+}
+
+button.boton-exportar.outline:hover:not(:disabled) {
+  background: var(--ok-fondo);
+  color: #11692f;
+}
+
+button:disabled,
+button:disabled.secondary.outline,
+button:disabled.boton-exportar {
+  background: #d3d8e0;
+  color: #6b7383;
+  border: 1px solid #c3c9d3;
+  box-shadow: none;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.barra-anonimizar button.secondary.outline.activa,
+.barra-anonimizar button.secondary.outline.activa:hover {
+  background: var(--marca);
+  color: #fff;
+  border-color: var(--marca);
+}
+
+/* Small buttons inside page tiles and section rows keep their own look. */
+.pagina .girar,
+.boton-quitar {
+  box-shadow: none;
 }
