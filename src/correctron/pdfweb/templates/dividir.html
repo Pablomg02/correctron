@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ nombre }} · Dividir · Correctron PDF{% endblock %}
+{% block migas %}<a href="/">PDFs</a>{% endblock %}
+{% block content %}
+<div x-data="dividir()" class="dividir" @keydown.escape.window="limpiar()">
+  <hgroup class="cabecera">
+    <h1>{{ nombre }}</h1>
+    <p class="meta">
+      <span>{{ paginas }} {{ 'página' if paginas == 1 else 'páginas' }}</span>
+      <span><code>{{ ruta }}</code></span>
+    </p>
+  </hgroup>
+
+  <div class="barra-dividir" role="toolbar" aria-label="Secciones">
+    <span class="seleccion" x-text="textoSeleccion()"></span>
+    <input type="text" x-ref="nombre" x-model="nombre" placeholder="Nombre de la sección"
+           aria-label="Nombre de la sección" @keydown.enter.prevent="seccionar()">
+    <button type="button" :disabled="!puedeSeccionar()" @click="seccionar()">Seccionar</button>
+    <button type="button" class="secondary outline" :disabled="secciones.length === 0"
+            @click="exportar()">Exportar</button>
+  </div>
+
+  <div class="dos-columnas ancha-izquierda">
+    <div>
+      <ul class="rejilla-paginas" aria-label="Páginas">
+        <template x-for="p in paginas" :key="p">
+          <li class="pagina" tabindex="0" :class="[claseDe(p), { seleccionada: enSeleccion(p) }]"
+              :aria-selected="enSeleccion(p) ? 'true' : 'false'"
+              @click="pulsar(p)" @keydown.enter.prevent="pulsar(p)" @keydown.space.prevent="pulsar(p)"
+              @dblclick="ampliar(p)">
+            <div class="marco" :class="{ girada: girada(p) }">
+              <img :src="urlPagina(p, 220)" loading="lazy" :alt="'Página ' + p">
+            </div>
+            <span class="etiqueta-seccion" x-show="seccionDe(p) >= 0"
+                  x-text="seccionDe(p) >= 0 ? secciones[seccionDe(p)].nombre : ''"></span>
+            <span class="numero" x-text="p"></span>
+            <button type="button" class="girar" :aria-pressed="girada(p) ? 'true' : 'false'"
+                    title="Girar 180°" aria-label="Girar 180°"
+                    @click.stop="alternarGiro(p)" @dblclick.stop>↻</button>
+          </li>
+        </template>
+      </ul>
+    </div>
+
+    <aside class="panel-secciones">
+      <h3>Secciones</h3>
+      <p class="ayuda" x-show="secciones.length === 0">Todavía no hay secciones. Selecciona páginas y dales un nombre.</p>
+      <ol class="lista-secciones">
+        <template x-for="(s, i) in secciones" :key="i">
+          <li :id="'seccion-' + i" :class="{ activa: activa === i }">
+            <span class="muestra" :class="'color-' + (i % 6)" aria-hidden="true"></span>
+            <input type="text" x-model="s.nombre" @change="renombrar(i)" aria-label="Nombre de la sección">
+            <small class="ayuda" x-text="rango(s)"></small>
+            <button type="button" class="boton-quitar" @click="quitar(i)">Quitar</button>
+          </li>
+        </template>
+      </ol>
+
+      <div class="exportadas" x-show="exportados.length > 0" x-cloak>
+        <p x-text="textoExportadas()"></p>
+        <ul>
+          <template x-for="archivo in exportados" :key="archivo">
+            <li><a :href="urlArchivo(archivo)" target="_blank" rel="noopener" x-text="archivo"></a></li>
+          </template>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <dialog x-ref="zoom" class="zoom" aria-label="Página ampliada" @close="ampliada = null">
+    <div class="zoom-cuerpo" @click="cerrarSiFondo($event)">
+      <div class="zoom-marco" :class="{ girada: ampliada !== null && girada(ampliada) }">
+        <img :src="ampliada !== null ? urlPagina(ampliada, 1200) : null" :alt="ampliada !== null ? 'Página ' + ampliada : ''">
+      </div>
+      <button type="button" class="secondary outline" @click="$refs.zoom.close()">Cerrar</button>
+    </div>
+  </dialog>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="application/json" id="estado">{{ estado|tojson }}</script>
+{# Not deferred: the component must exist before Alpine (deferred in base.html) starts. #}
+<script src="/static/dividir.js"></script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<hgroup class="cabecera">
+  <h1>PDFs</h1>
+  <p>Carpeta de datos: <code>{{ raiz }}</code> · copia aquí los PDF escaneados y recarga la página.</p>
+</hgroup>
+{% if carpetas %}
+  {% for grupo in carpetas %}
+  <section class="pdf-carpeta">
+    <h2>{% if grupo.carpeta %}<code>{{ grupo.carpeta }}/</code>{% else %}Carpeta principal{% endif %}</h2>
+    <ul class="rejilla-tarjetas">
+      {% for pdf in grupo.pdfs %}
+      <li>
+        <article class="tarjeta pdf-tarjeta">
+          <h3>{{ pdf.nombre }}</h3>
+          <p class="tarjeta-sub">
+            {% if pdf.paginas is none %}No se puede abrir este PDF.
+            {% else %}{{ pdf.paginas }} {{ 'página' if pdf.paginas == 1 else 'páginas' }}{% endif %}
+          </p>
+          {% if pdf.paginas is not none %}
+          <div class="pdf-acciones">
+            <a role="button" href="/dividir?pdf={{ pdf.ruta|urlencode }}">Dividir</a>
+            <a role="button" class="secondary outline" href="/anonimizar?pdf={{ pdf.ruta|urlencode }}">Anonimizar</a>
+          </div>
+          {% endif %}
+        </article>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+{% else %}
+  <div class="vacio">
+    <strong>No hay PDFs.</strong>
+    Copia el PDF escaneado en <code>{{ raiz }}</code> y recarga.
+  </div>
+{% endif %}
+{% endblock %}

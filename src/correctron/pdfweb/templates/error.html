@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Error {{ codigo }} · Correctron PDF{% endblock %}
+{% block content %}
+<article class="tarjeta pagina-error">
+  <h2>{% if codigo == 404 %}No encontrado{% elif codigo == 409 %}El archivo ha cambiado{% elif codigo == 400 %}Datos no válidos{% else %}Error {{ codigo }}{% endif %}</h2>
+  <div class="banner banner-error" role="alert">
+    <span>{{ mensaje }}</span>
+    {% if recargar %}<button type="button" class="outline" onclick="location.reload()">Recargar</button>{% endif %}
+  </div>
+  <p>
+    {% if volver %}<a href="{{ volver }}" role="button" class="outline">Volver</a>{% endif %}
+    <a href="/" role="button" class="secondary outline">Ir al inicio</a>
+  </p>
+</article>
+{% endblock %}

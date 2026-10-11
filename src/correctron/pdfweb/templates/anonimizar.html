@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ nombre }} · Anonimizar · Correctron PDF{% endblock %}
+{% block migas %}<a href="/">PDFs</a>{% endblock %}
+{% block content %}
+<div x-data="anonimizar()" class="anonimizar" @keydown.window="teclas($event)">
+  <hgroup class="cabecera">
+    <h1>{{ nombre }}</h1>
+    <p class="meta">
+      <span>{{ paginas }} {{ 'página' if paginas == 1 else 'páginas' }}</span>
+      <span><code>{{ ruta }}</code></span>
+    </p>
+  </hgroup>
+
+  <div class="barra-anonimizar" role="toolbar" aria-label="Recuadros">
+    <label class="color-campo">Color
+      <input type="color" x-model="color" @change="fijarColor(color)" aria-label="Color del recuadro">
+    </label>
+    <button type="button" class="secondary outline" :class="{ activa: pipeta }"
+            :aria-pressed="pipeta ? 'true' : 'false'" @click="alternarPipeta()">Pipeta</button>
+    <button type="button" class="secondary outline" :disabled="!puedeCopiar()"
+            @click="copiarATodas()">Copiar a todas las páginas</button>
+    <button type="button" class="secondary outline" :disabled="seleccion === null"
+            @click="quitarSeleccionado()">Quitar recuadro</button>
+    <span class="navegacion">
+      <button type="button" class="secondary outline" :disabled="actual <= 1" @click="irA(actual - 1)">‹ Anterior</button>
+      <span x-text="actual + ' / ' + total"></span>
+      <button type="button" class="secondary outline" :disabled="actual >= total" @click="irA(actual + 1)">Siguiente ›</button>
+    </span>
+    <span class="exportar">
+      <button type="button" :disabled="recuadros.length === 0 || ocupado"
+              @click="exportar(false)">Exportar este PDF</button>
+      <button type="button" class="secondary outline" :disabled="recuadros.length === 0 || ocupado"
+              @click="exportar(true)">{{ 'Aplicar al único PDF de esta carpeta' if en_carpeta == 1 else 'Aplicar a los %d PDFs de esta carpeta' % en_carpeta }}</button>
+    </span>
+  </div>
+
+  <div class="cuerpo-anonimizar">
+    <ol class="tiras" aria-label="Páginas">
+      <template x-for="p in numeros" :key="p">
+        <li :id="'miniatura-' + p" class="miniatura" tabindex="0" :class="{ actual: p === actual }"
+            :aria-current="p === actual ? 'page' : null"
+            @click="irA(p)" @keydown.enter.prevent="irA(p)" @keydown.space.prevent="irA(p)">
+          <div class="marco">
+            <img :src="urlPagina(p, 220)" loading="lazy" draggable="false" :alt="'Página ' + p">
+          </div>
+          <span class="numero" x-text="p"></span>
+          <span class="insignia" x-show="cuantos(p) > 0" x-text="cuantos(p)"
+                :aria-label="cuantos(p) + ' recuadros'"></span>
+        </li>
+      </template>
+    </ol>
+
+    <div class="vista">
+      <p class="ayuda" x-show="!pipeta">Arrastra sobre la página para dibujar un recuadro. Haz clic en un recuadro para seleccionarlo; Supr lo quita.</p>
+      <p class="ayuda aviso-pipeta" x-show="pipeta" x-cloak>Haz clic sobre la página para tomar su color.</p>
+      <div class="lienzo" x-ref="lienzo" :class="{ pipeta: pipeta }"
+           @pointerdown="pulsarLienzo($event)" @pointermove="moverArrastre($event)"
+           @pointerup="soltarArrastre($event)" @pointercancel="cancelarArrastre()">
+        <img :src="urlPagina(actual, 1200)" :alt="'Página ' + actual" draggable="false">
+        <template x-for="i in visibles()" :key="i">
+          <div class="recuadro" :class="{ seleccionado: seleccion === i }"
+               :style="estilo(recuadros[i])" @pointerdown.stop="pulsarRecuadro(i, $event)">
+            <span class="etiqueta-todas" x-show="recuadros[i].pagina === 'todas'">todas</span>
+          </div>
+        </template>
+        <div class="recuadro arrastre" x-show="arrastre !== null" x-cloak :style="estiloArrastre()"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="exportadas" x-show="exportados.length > 0" x-cloak>
+    <p x-text="textoExportadas()"></p>
+    <ul>
+      <template x-for="archivo in exportados" :key="archivo">
+        <li><a :href="urlArchivo(archivo)" target="_blank" rel="noopener" x-text="archivo"></a></li>
+      </template>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="application/json" id="estado">{{ estado|tojson }}</script>
+{# Not deferred: the component must exist before Alpine (deferred in base.html) starts. #}
+<script src="/static/anonimizar.js"></script>
+{% endblock %}

@@ -1,0 +1,502 @@
+/* Correctron PDF: layout on top of the grading web's app.css (tokens and cards). */
+
+.pdf-carpeta {
+  margin-bottom: 1.75rem;
+}
+
+.pdf-carpeta h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+}
+
+.pdf-tarjeta h3 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.pdf-tarjeta .tarjeta-sub {
+  color: var(--tenue);
+  font-size: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.pdf-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pdf-acciones a[role="button"] {
+  margin: 0;
+  width: auto;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+}
+
+/* --- Dividir --- */
+
+[x-cloak] {
+  display: none !important;
+}
+
+/* Six section colours; each rule sets --c for the border, the badge and the swatch. */
+.color-0 { --c: #3451d1; }
+.color-1 { --c: #15803d; }
+.color-2 { --c: #b45309; }
+.color-3 { --c: #b42318; }
+.color-4 { --c: #6d3fc0; }
+.color-5 { --c: #0e7490; }
+
+.barra-dividir {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.6rem 0;
+  background: var(--fondo);
+  border-bottom: 1px solid var(--borde);
+}
+
+.barra-dividir .seleccion {
+  min-width: 11rem;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.barra-dividir input {
+  flex: 1 1 14rem;
+  max-width: 24rem;
+  margin: 0;
+}
+
+.barra-dividir button {
+  width: auto;
+  margin: 0;
+}
+
+.rejilla-paginas > li,
+.lista-secciones > li,
+.tiras > li {
+  list-style: none; /* Pico sets list-style on every ul li */
+}
+
+.rejilla-paginas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.9rem;
+}
+
+.pagina {
+  position: relative;
+  padding: 0.5rem 0.5rem 0.4rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-peq);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow 0.12s;
+}
+
+.pagina:hover {
+  box-shadow: var(--sombra-media);
+}
+
+.pagina:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 2px;
+}
+
+.pagina.en-seccion {
+  border-left: 5px solid var(--c);
+}
+
+.pagina.seleccionada {
+  outline: 3px solid var(--marca);
+  outline-offset: 2px;
+}
+
+.marco {
+  aspect-ratio: 1 / 1.414;
+  overflow: hidden;
+  background: #eef1f6;
+  border-radius: 0.2rem;
+}
+
+.marco img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.marco.girada img,
+.zoom-marco.girada img {
+  transform: rotate(180deg);
+}
+
+.etiqueta-seccion {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  max-width: calc(100% - 4.5rem);
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.3rem;
+  background: var(--c);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pagina .numero {
+  display: block;
+  margin-top: 0.35rem;
+  text-align: center;
+  color: var(--tenue);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pagina .girar {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: auto;
+  margin: 0;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  background: var(--superficie);
+  color: var(--texto-2);
+  border: 1px solid var(--borde-fuerte);
+}
+
+.pagina .girar[aria-pressed="true"] {
+  background: var(--marca-suave);
+  color: var(--marca);
+  border-color: var(--marca);
+}
+
+.panel-secciones h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+
+.lista-secciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lista-secciones li {
+  display: grid;
+  grid-template-columns: 0.75rem minmax(0, 1fr) auto;
+  gap: 0.2rem 0.55rem;
+  align-items: center;
+  padding: 0.5rem 0.6rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-peq);
+  box-shadow: var(--sombra);
+}
+
+.lista-secciones li.activa {
+  border-color: var(--marca);
+  box-shadow: 0 0 0 2px var(--marca-suave);
+}
+
+.lista-secciones .muestra {
+  grid-row: 1 / span 2;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+.lista-secciones input {
+  margin: 0;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+.lista-secciones .ayuda {
+  grid-column: 2 / span 1;
+  margin: 0;
+}
+
+.lista-secciones .boton-quitar {
+  margin: 0;
+}
+
+.exportadas {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--ok-fondo);
+  border: 1px solid var(--ok-borde);
+  border-radius: var(--radio-peq);
+  font-size: 0.9rem;
+}
+
+.exportadas p {
+  margin-bottom: 0.4rem;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.exportadas ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+dialog.zoom {
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: 96vw;
+  max-height: 96vh;
+}
+
+dialog.zoom::backdrop {
+  background: rgba(16, 24, 40, 0.72);
+}
+
+.zoom-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.zoom-marco img {
+  display: block;
+  max-width: 92vw;
+  max-height: 84vh;
+  width: auto;
+  height: auto;
+  border-radius: 0.3rem;
+  box-shadow: var(--sombra-alta);
+  background: var(--superficie);
+}
+
+.zoom-cuerpo button {
+  width: auto;
+  margin: 0;
+}
+
+/* --- Anonimizar --- */
+
+.barra-anonimizar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.6rem 0;
+  background: var(--fondo);
+  border-bottom: 1px solid var(--borde);
+}
+
+.barra-anonimizar button {
+  width: auto;
+  margin: 0;
+}
+
+.barra-anonimizar button.activa {
+  background: var(--marca-suave);
+  color: var(--marca);
+  border-color: var(--marca);
+}
+
+.barra-anonimizar .color-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.barra-anonimizar input[type="color"] {
+  width: 2.75rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0.15rem;
+  cursor: pointer;
+}
+
+.barra-anonimizar .navegacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--texto-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.barra-anonimizar .exportar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.cuerpo-anonimizar {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.tiras {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.25rem 0 0;
+  display: grid;
+  gap: 0.6rem;
+  max-height: calc(100vh - 9rem);
+  overflow-y: auto;
+}
+
+.miniatura {
+  position: relative;
+  padding: 0.35rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-peq);
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  user-select: none;
+}
+
+.miniatura:hover {
+  box-shadow: var(--sombra-media);
+}
+
+.miniatura:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 2px;
+}
+
+.miniatura.actual {
+  outline: 3px solid var(--marca);
+  outline-offset: 1px;
+}
+
+.miniatura .numero {
+  display: block;
+  margin-top: 0.3rem;
+  text-align: center;
+  color: var(--tenue);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.miniatura .insignia {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  min-width: 1.4rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--marca);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4rem;
+  text-align: center;
+}
+
+.vista {
+  min-width: 0;
+}
+
+.vista .ayuda {
+  margin-bottom: 0.6rem;
+}
+
+.lienzo {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #eef1f6;
+  border-radius: var(--radio-peq);
+  box-shadow: var(--sombra-media);
+  cursor: cell;
+  user-select: none;
+  touch-action: none;
+}
+
+.lienzo.pipeta {
+  cursor: crosshair;
+}
+
+.lienzo > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.recuadro {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.recuadro.seleccionado {
+  outline: 3px solid var(--marca);
+  outline-offset: 2px;
+}
+
+.recuadro.arrastre {
+  border: 2px dashed var(--marca);
+  background: rgba(52, 81, 209, 0.12);
+  pointer-events: none;
+}
+
+.recuadro .etiqueta-todas {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 0.05rem 0.35rem;
+  border-top-right-radius: 0.3rem;
+  background: rgba(16, 24, 40, 0.75);
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .cuerpo-anonimizar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tiras {
+    grid-auto-flow: column;
+    grid-auto-columns: 7rem;
+    max-height: none;
+    padding-bottom: 0.4rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}

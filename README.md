@@ -90,6 +90,62 @@ Pide al LLM que lea `data/LEEME.md`, en especial la sección
 como un corrector más en las pestañas «Notas» y «Comparar», desde donde puedes
 pasar sus notas a `final.csv`.
 
+## Herramienta de PDFs (dividir y anonimizar)
+
+Un segundo servidor local, separado de Correctron, sirve para partir el PDF
+escaneado con todos los exámenes de una convocatoria en un PDF por alumno y
+para tapar el nombre antes de corregir.
+
+```sh
+uv run correctron-pdf
+```
+
+Abre el navegador en `http://127.0.0.1:8766`. El puerto es distinto del de
+Correctron, así que las dos webs pueden estar abiertas a la vez. Opciones:
+
+- `--data CARPETA`: carpeta de los PDF. Si no se indica, se usa la variable de
+  entorno `CORRECTRON_PDF_DATA` y, si tampoco existe, `./pdfs`.
+- `--host` y `--port`: dirección y puerto (por defecto `127.0.0.1` y `8766`).
+- `--no-abrir`: no abrir el navegador automáticamente.
+
+El flujo de trabajo es este:
+
+1. Copia el PDF escaneado en `pdfs/` (también sirven las subcarpetas) y abre la
+   web: la página inicial lista los PDF con su número de páginas.
+2. **Dividir**: haz clic en la primera página de un alumno y en la última,
+   escribe su nombre y pulsa «Seccionar». Con ↻ se gira 180° una página
+   escaneada al revés. «Exportar» escribe un PDF por sección en una carpeta
+   `pdfs/<nombre del PDF>/`, con el nombre de la sección. Los caracteres que
+   no sirven en un nombre de archivo (`/ \ : * ? " < > |`) se cambian por `-`.
+3. **Anonimizar**: abre uno de los PDF exportados y dibuja recuadros arrastrando
+   sobre la página. El color se elige con el selector o con la pipeta, que toma
+   el color de un punto de la página. «Copiar a todas las páginas» hace que un
+   recuadro aparezca en todas las hojas. «Exportar este PDF» genera la copia
+   anonimizada; «Aplicar a los N PDFs de esta carpeta» aplica los mismos
+   recuadros a todos los PDF de la carpeta. Los recuadros en una página que un
+   PDF no tiene se omiten, y la web lo indica.
+4. Las copias anonimizadas van a una subcarpeta `anonimizados/` junto al PDF,
+   con el mismo nombre. El original no se modifica.
+
+Mientras trabajas, la web guarda el estado en dos archivos JSON junto a cada
+PDF, así que cerrar el navegador no pierde nada:
+
+- `<nombre>.secciones.json`: las secciones (nombre, primera y última página) y
+  las páginas giradas.
+- `<nombre>.recuadros.json`: los recuadros, con la página (un número o
+  `"todas"`), la posición y el tamaño como fracciones de la página, y el color.
+
+Son archivos de texto legibles. Si los editas a mano con la página abierta, la
+web no sobrescribe el cambio: avisa y pide recargar.
+
+Anonimizar aplana las páginas: cada hoja se convierte en una imagen de 200 ppp
+con los recuadros ya pintados. Así lo que queda tapado no se puede recuperar
+desde el PDF, porque no hay texto ni imágenes debajo. El precio es que los
+archivos pesan más y que no se puede buscar texto en ellos.
+
+Igual que `data/`, la carpeta `pdfs/` está en `.gitignore`: los escaneos
+contienen datos de alumnos.
+
 ## Seguridad y privacidad
 
 - El servidor escucha solo en `127.0.0.1` y no tiene usuarios ni contraseñas:
